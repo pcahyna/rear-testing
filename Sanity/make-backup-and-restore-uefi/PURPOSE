@@ -1,0 +1,3 @@
+PURPOSE of /CoreOS/rear/Sanity/rear-basic
+Description: Test basic functionality of REAR on systems with UEFI.
+Author: Lukas Zaoral <lzaoral@redhat.com>
