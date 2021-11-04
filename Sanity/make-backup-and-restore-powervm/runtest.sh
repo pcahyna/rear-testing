@@ -110,12 +110,16 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 OFPATH_LAST_BOOTED="$(nvram --print-config=ibm,last-booted)"
                 OFPATH_REAR="$(ofpathname "$REAR_ROOT")"
 
-                NEW_BOOT_ORDER="$($BOOTLIST_CMD | sed "s|$OFPATH_LAST_BOOTED|$OFPATH_REAR|")"
+                # Let bootlist to load the new boot order from a file
+                # so that we don't have to deal with whitespaces.
+                rlRun "$BOOTLIST_CMD | \
+                       sed 's|$OFPATH_LAST_BOOTED|$OFPATH_REAR|' | \
+                       tee new_boot_order" 0 "Generate new boot order"
 
                 # LAN has to be first! If REAR corrupted the machine and haven't
                 # changed the boot order yet, the machine would remain broken as
                 # Beaker expects the machine to always boot from LAN first.
-                rlRun "$BOOTLIST_CMD $NEW_BOOT_ORDER" 0 "Set new bootorder"
+                rlRun "$BOOTLIST_CMD -f new_boot_order" 0 "Set new bootorder"
             else
                 rlLog "KVM???"
                 rlDie "TODO:"
