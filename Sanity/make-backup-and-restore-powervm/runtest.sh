@@ -55,15 +55,14 @@ BACKUP_URL=iso://backup
 ISO_DEFAULT=automatic
 AUTOEXCLUDE_MULTIPATH=n
 MIGRATION_MODE=n
-ISO_RECOVER_MODE=unattended' > /etc/rear/local.conf" 0 "Create basic configuration file"
+ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configuration file"
             rlAssertExists "/etc/rear/local.conf"
-            rlRun "cat /etc/rear/local.conf"
         rlPhaseEnd
 
         rlPhaseStartSetup
             rlLog "Backup original boot order"
             if lparstat > /dev/null; then
-                rlRun "bootlist -m normal -r > bootorder.bak" 0 "Backup original bootorder"
+                rlRun "bootlist -m normal -r | tee bootorder.bak" 0 "Backup original bootorder"
             else
                 rlLog "KVM???"
                 rlDie "TODO:"
@@ -79,7 +78,7 @@ ISO_RECOVER_MODE=unattended' > /etc/rear/local.conf" 0 "Create basic configurati
             REAR_ROOT="/dev/sdb"
 
             rlLog "Selected $REAR_ROOT"
-            rlRun "lsblk > drive_layout" 0 "Store lsblk output in recovery image"
+            rlRun "lsblk | tee drive_layout" 0 "Store lsblk output in recovery image"
             rlAssertExists drive_layout
         rlPhaseEnd
 
@@ -129,7 +128,7 @@ ISO_RECOVER_MODE=unattended' > /etc/rear/local.conf" 0 "Create basic configurati
         rlPhaseStartTest
             rlAssertNotExists recovery_will_remove_me
             rlAssertExists drive_layout
-            rlRun "lsblk > drive_layout.new" 0 "Get current lsblk output"
+            rlRun "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
             rlAssertNotDiffer drive_layout drive_layout.new
         rlPhaseEnd
 
