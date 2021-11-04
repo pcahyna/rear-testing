@@ -54,6 +54,7 @@ BACKUP=NETFS
 BACKUP_URL=iso://backup
 ISO_DEFAULT=automatic
 AUTOEXCLUDE_MULTIPATH=n
+MIGRATION_MODE=n
 ISO_RECOVER_MODE=unattended' > /etc/rear/local.conf" 0 "Create basic configuration file"
             rlAssertExists "/etc/rear/local.conf"
             rlRun "cat /etc/rear/local.conf"
