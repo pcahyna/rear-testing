@@ -134,7 +134,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
 
         rlPhaseStartCleanup
             if lparstat > /dev/null; then
-                rlRun "bootlist -m normal -r $(cat bootorder.bak)" 0 "Restore the original bootorder"
+                rlRun "bootlist -m normal -r -f bootorder.bak" 0 "Restore the original bootorder"
             else
                 rlLog "KVM???"
                 rlDie "TODO:"
