@@ -103,15 +103,16 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
         # TODO: should be configurable in /etc/rear/local.conf!!!
         rlPhaseStartSetup
             rlLog "Make REAR autoboot to unattended recovery"
-            rlRun "mount ${REAR_ROOT}1 /mnt" 0 "Mount REAR partition"
-            rlRun "sed -i '/^ontimeout/d' /mnt/boot/syslinux/extlinux.conf" 0 "Disable hd1 autoboot on timeout"
+            rlRun "mkdir /mnt/rear" 0 "Make /mnt/rear"
+            rlRun "mount ${REAR_ROOT}1 /mnt/rear" 0 "Mount REAR partition"
+            rlRun "sed -i '/^ontimeout/d' /mnt/rear/boot/syslinux/extlinux.conf" 0 "Disable hd1 autoboot on timeout"
 
             HOSTNAME_SHORT=$(hostname --short)
-            rlRun "sed -i '/^menu begin/i default $HOSTNAME_SHORT' /mnt/rear/syslinux.cfg" 0 "Set recovery menu as default boot target"
-            rlRun "sed -i '1idefault rear-unattended' /mnt/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (1/2)"
-            rlRun "sed -z -i 's/label[^\n]*\(\n[^\n]*AUTOMATIC\)/label rear-unattended\1/' /mnt/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (2/2)"
-            rlRun "sed -i 's/auto_recover/unattended/' /mnt/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Pass 'unattended' to kernel command-line"
-            rlRun "umount -R /mnt" 0 "Unmount REAR partition"
+            rlRun "sed -i '/^menu begin/i default $HOSTNAME_SHORT' /mnt/rear/rear/syslinux.cfg" 0 "Set recovery menu as default boot target"
+            rlRun "sed -i '1idefault rear-unattended' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (1/2)"
+            rlRun "sed -z -i 's/label[^\n]*\(\n[^\n]*AUTOMATIC\)/label rear-unattended\1/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (2/2)"
+            rlRun "sed -i 's/auto_recover/unattended/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Pass 'unattended' to kernel command-line"
+            rlRun "umount -R /mnt/rear" 0 "Unmount REAR partition"
         rlPhaseEnd
 
         rhts-reboot
