@@ -40,7 +40,7 @@ rlJournalStart
 
         # Sanity check
         rlPhaseStartSetup
-            rlRun "systemd-detect-virt | grep powervm" 0 "Check that we are on PowerVM machine"
+            rlRun "lscpu | grep 'Hypervisor vendor:     pHyp'" 0 "Check that we are on a PowerVM machine"
             if [ $? -eq 1 ]; then
                 rlDie "Not a PowerVM machine!!!"
             fi
