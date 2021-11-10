@@ -108,7 +108,10 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 BOOTLIST_CMD="bootlist -m normal -r"
 
                 OFPATH_LAST_BOOTED="$(nvram --print-config=ibm,last-booted)"
+                rlLog "Last booted path: $OFPATH_LAST_BOOTED"
+
                 OFPATH_REAR="$(ofpathname "$REAR_ROOT")"
+                rlLog "REAR path: $OFPATH_REAR"
 
                 # Let bootlist to load the new boot order from a file
                 # so that we don't have to deal with whitespaces.
