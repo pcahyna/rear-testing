@@ -50,9 +50,8 @@ rlJournalStart
 BACKUP=NETFS
 BACKUP_URL=usb:///dev/disk/by-label/REAR-000
 ISO_DEFAULT=automatic
-ISO_RECOVER_MODE=unattended' > /etc/rear/local.conf" 0 "Creating basic configuration file"
+ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic configuration file"
             rlAssertExists "/etc/rear/local.conf"
-            rlRun "cat /etc/rear/local.conf"
         rlPhaseEnd
 
         rlPhaseStartSetup
@@ -73,7 +72,7 @@ ISO_RECOVER_MODE=unattended' > /etc/rear/local.conf" 0 "Creating basic configura
 
             rlLog "Selected $REAR_ROOT"
             rlRun "rear -v format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
-            rlRun "lsblk > drive_layout" 0 "Store lsblk output in recovery image"
+            rlRun "lsblk | tee drive_layout" 0 "Store lsblk output in recovery image"
             rlAssertExists drive_layout
         rlPhaseEnd
 
@@ -122,7 +121,7 @@ ISO_RECOVER_MODE=unattended' > /etc/rear/local.conf" 0 "Creating basic configura
         rlPhaseStartTest
             rlAssertNotExists recovery_will_remove_me
             rlAssertExists drive_layout
-            rlRun "lsblk > drive_layout.new" 0 "Get current lsblk output"
+            rlRun "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
             rlAssertNotDiffer drive_layout drive_layout.new
         rlPhaseEnd
 
