@@ -65,6 +65,10 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
         rlPhaseEnd
 
         rlPhaseStartSetup
+            # TODO: backup whole /dev/nvram???
+            rlRun "nvram --print-config | tee nvram.bak" 0 \
+                  "Backup NVRAM entries"
+
             rlLog "Backup original boot order"
             if grep -q "emulated by qemu" /proc/cpuinfo ; then
                 # PowerKVM
@@ -160,6 +164,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             rlFileRestore
             rlRun "rm -f drive_layout{,.new}" 0 "Remove lsblk outputs"
             rlRun "rm -f bootorder.bak" 0 "Remove bootorder backup"
+            rlRun "rm -f nvram.bak" 0 "Remove NVRAM variables backup"
         rlPhaseEnd
 
     else
