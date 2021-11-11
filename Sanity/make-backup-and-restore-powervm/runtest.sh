@@ -40,9 +40,14 @@ rlJournalStart
 
         # Sanity check
         rlPhaseStartSetup
-            rlRun "lscpu | grep 'Hypervisor vendor:     pHyp'" 0 "Check that we are on a PowerVM machine"
-            if [ $? -eq 1 ]; then
-                rlDie "Not a PowerVM machine!!!"
+            # We use the same procedure that REAR uses for machine detection.
+            MACHINE="$(uname -m)"
+            if [ "$MACHINE" != ppc64le ]; then
+                rlDie "Not a ppc64le machine! Got: $MACHINE"
+            fi
+
+            if [ "$(awk '/platform/ {print $NF}' < /proc/cpuinfo)" = PowerNV ]; then
+                rlDie "Got PowerNV machine!"
             fi
         rlPhaseEnd
 
@@ -61,11 +66,12 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
 
         rlPhaseStartSetup
             rlLog "Backup original boot order"
-            if lparstat > /dev/null; then
-                rlRun "bootlist -m normal -r | tee bootorder.bak" 0 "Backup original bootorder"
+            if grep -q "emulated by qemu" /proc/cpuinfo ; then
+                # PowerKVM
+                rlDie "KVM?"
             else
-                rlLog "KVM???"
-                rlDie "TODO:"
+                # PowerVM
+                rlRun "bootlist -m normal -r | tee bootorder.bak" 0 "Backup original bootorder"
             fi
 
             rlAssertExists bootorder.bak
@@ -104,14 +110,19 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
 
         rlPhaseStartTest
             rlLog "Setup correct boot order for REAR"
-            if lparstat > /dev/null; then
+
+            OFPATH_REAR="$(ofpathname "$REAR_ROOT")"
+            rlLog "$REAR_ROOT Open Firmware path: $OFPATH_REAR"
+
+            if grep -q "emulated by qemu" /proc/cpuinfo ; then
+                # PowerKVM
+                rlDie "KVM?"
+            else
+                # PowerVM
                 BOOTLIST_CMD="bootlist -m normal -r"
 
                 OFPATH_LAST_BOOTED="$(nvram --print-config=ibm,last-booted)"
                 rlLog "Last booted path: $OFPATH_LAST_BOOTED"
-
-                OFPATH_REAR="$(ofpathname "$REAR_ROOT")"
-                rlLog "REAR path: $OFPATH_REAR"
 
                 # Let bootlist to load the new boot order from a file
                 # so that we don't have to deal with whitespaces.
@@ -123,9 +134,6 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 # changed the boot order yet, the machine would remain broken as
                 # Beaker expects the machine to always boot from LAN first.
                 rlRun "$BOOTLIST_CMD -f new_boot_order" 0 "Set new bootorder"
-            else
-                rlLog "KVM???"
-                rlDie "TODO:"
             fi
         rlPhaseEnd
 
@@ -140,11 +148,13 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
         rlPhaseEnd
 
         rlPhaseStartCleanup
-            if lparstat > /dev/null; then
-                rlRun "bootlist -m normal -r -f bootorder.bak" 0 "Restore the original bootorder"
+            if grep -q "emulated by qemu" /proc/cpuinfo ; then
+                # PowerKVM
+                rlDie "KVM?"
             else
-                rlLog "KVM???"
-                rlDie "TODO:"
+                # PowerVM
+                rlRun "bootlist -m normal -r -f bootorder.bak" 0 \
+                    "Restore the original bootorder"
             fi
 
             rlFileRestore
