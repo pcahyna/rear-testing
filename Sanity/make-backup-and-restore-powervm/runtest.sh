@@ -72,7 +72,8 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             rlLog "Backup original boot order"
             if grep -q "emulated by qemu" /proc/cpuinfo ; then
                 # PowerKVM
-                rlDie "KVM?"
+                rlRun "nvram --print-config=boot-device | tee bootorder.bak" 0 \
+                    "Backup original boot order"
             else
                 # PowerVM
                 rlRun "bootlist -m normal -r | tee bootorder.bak" 0 "Backup original bootorder"
@@ -120,7 +121,13 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
 
             if grep -q "emulated by qemu" /proc/cpuinfo ; then
                 # PowerKVM
-                rlDie "KVM?"
+                :
+                # you have to boot manually at the moment :(
+
+                # PowerKVM completely ignores boot-device nvram variable!!!
+                # TODO: Is always boot-device in 'common' partition?
+                # rlRun "nvram -p common --update-config boot-device='$OFPATH_REAR'" \
+                #    0 "Set boot-device to $OFPATH_REAR"
             else
                 # PowerVM
                 BOOTLIST_CMD="bootlist -m normal -r"
@@ -162,7 +169,8 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
         rlPhaseStartCleanup
             if grep -q "emulated by qemu" /proc/cpuinfo ; then
                 # PowerKVM
-                rlDie "KVM?"
+                # TODO: Do nothing?
+                :
             else
                 # PowerVM
                 rlRun "bootlist -m normal -r -f bootorder.bak" 0 \
