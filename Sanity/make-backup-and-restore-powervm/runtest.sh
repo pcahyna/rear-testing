@@ -132,12 +132,20 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 # so that we don't have to deal with whitespaces.
                 rlRun "$BOOTLIST_CMD | \
                        sed 's|$OFPATH_LAST_BOOTED|$OFPATH_REAR|' | \
-                       tee new_boot_order" 0 "Generate new boot order"
+                       tee expected_new_boot_order" 0 "Generate new boot order"
 
                 # LAN has to be first! If REAR corrupted the machine and haven't
                 # changed the boot order yet, the machine would remain broken as
                 # Beaker expects the machine to always boot from LAN first.
-                rlRun "$BOOTLIST_CMD -f new_boot_order" 0 "Set new bootorder"
+                rlRun "$BOOTLIST_CMD -f expected_new_boot_order" 0 "Set new bootorder"
+
+                # Sanity check that bootlist did not botch setting the new boot
+                # order. Happens on RHEL 7.6 at the moment.
+                rlRun "$BOOTLIST_CMD | tee current_boot_order" 0 "Get the new bootorder"
+                if ! rlAssertNotDiffer current_boot_order expected_new_boot_order; then
+                    rlDie "bootlist botched the bootorder entry!" \
+                        bootorder.bak nvram.bak
+                fi
             fi
         rlPhaseEnd
 
@@ -159,6 +167,15 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 # PowerVM
                 rlRun "bootlist -m normal -r -f bootorder.bak" 0 \
                     "Restore the original bootorder"
+
+                # Sanity check that bootlist did not botch setting the new boot
+                # order. Happens on RHEL 7.6 at the moment.
+                rlRun "$BOOTLIST_CMD | tee current_boot_order" 0 "Get the new bootorder"
+                if ! rlAssertNotDiffer current_boot_order bootorder.bak; then
+                    rlDie "bootlist botched the bootorder entry!" \
+                        bootorder.bak nvram.bak
+                fi
+                rlRun "rm -f current_boot_order" 0 "Remove current_boot_order file"
             fi
 
             rlFileRestore
