@@ -147,11 +147,18 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 rlRun "$BOOTLIST_CMD -f expected_new_boot_order" 0 "Set new bootorder"
 
                 # Sanity check that bootlist did not botch setting the new boot
-                # order. Happens on RHEL 7.6 at the moment.
+                # order. Happens (at least) on RHEL 7.6 at the moment.
                 rlRun "$BOOTLIST_CMD | tee current_boot_order" 0 "Get the new bootorder"
                 if ! rlAssertNotDiffer current_boot_order expected_new_boot_order; then
-                    rlDie "bootlist botched the bootorder entry!" \
-                        bootorder.bak nvram.bak
+                    rlLogWarning "Bootlist botched the bootorder entry!"
+                    rlFileSubmit bootorder.bak
+                    rlFileSubmit nvram.bak
+
+                    OLD_BOOT_DEVICE_ENTRY=$(grep '^boot-device=' nvram.bak)
+                    rlRun "nvram -p common --update-config '$OLD_BOOT_DEVICE_ENTRY'" \
+                        0 "Set original boot-device"
+
+                    rlDie "Bootlist binary is broken! Stopping so that REAR does not destroy this VM."
                 fi
             fi
         rlPhaseEnd
