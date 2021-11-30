@@ -55,6 +55,11 @@ rlJournalStart
             for entry in $(efibootmgr | grep REAR | cut -c 5-8); do
                 rlRun "efibootmgr -b $entry -B" 0 "Removing entry $entry"
             done
+
+            rlRun "efibootmgr | tee efibootmgr.bak" "Create efibootmgr.bak"
+
+            rlAssertExists efibootmgr.bak
+            rlFileSubmit efibootmgr.bak
         rlPhaseEnd
 
         rlPhaseStartSetup
@@ -82,7 +87,6 @@ USB_UEFI_PART_SIZE=500' > /etc/rear/local.conf" 0 "Create basic configuration fi
             rlAssertExists drive_layout
         rlPhaseEnd
 
-        # TODO: store original boot order in backup???
         rlPhaseStartTest
             rlRun "rear -v mkbackup" 0 "Creating backup to $REAR_ROOT"
         rlPhaseEnd
