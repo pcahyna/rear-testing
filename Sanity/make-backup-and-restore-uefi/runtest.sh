@@ -96,13 +96,16 @@ USB_UEFI_PART_SIZE=500' > /etc/rear/local.conf" 0 "Create basic configuration fi
             rlAssertExists recovery_will_remove_me
         rlPhaseEnd
 
-        # TODO save boot order, add disk, restore boot order, set boot next
         rlPhaseStartSetup
             rlRun "efibootmgr --create --gpt --disk $REAR_ROOT --part 1 --write-signature --label REAR --loader '\EFI\BOOT\BOOTX64.efi'" 0 "Add REAR entry to EFI"
 
-            REAR_BOOT_ENTRY="$(efibootmgr | grep REAR)"
+            OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d: -f2)"
+            rlRun "efibootmgr --bootorder '$OLD_BOOT_ORDER'" 0 "Restore old boot order"
+
             # will find BootXXXX* REAR
-            rlRun "efibootmgr -n $(cut -c 5-8 <<< "$REAR_BOOT_ENTRY")" 0 "Set next boot entry to $REAR_BOOT_ENTRY"
+            REAR_BOOT_ENTRY="$(efibootmgr | grep REAR | cut -c 5-8)"
+            rlRun "efibootmgr --bootnext '$REAR_BOOT_ENTRY'" \
+                0 "Set next boot entry to $REAR_BOOT_ENTRY"
         rlPhaseEnd
 
         # TODO: this should be convigurable in /etc/rear/local.conf!!!
@@ -129,8 +132,13 @@ USB_UEFI_PART_SIZE=500' > /etc/rear/local.conf" 0 "Create basic configuration fi
         rlPhaseEnd
 
         rlPhaseStartCleanup
-            # TODO! restore boot order
-            rlRun "efibootmgr -b '$(efibootmgr | grep REAR | cut -c 5-8)' -B" 0 "Remove REAR boot entry"
+            rlLog "Remove created REAR boot entries"
+            for entry in $(efibootmgr | grep REAR | cut -c 5-8); do
+                rlRun "efibootmgr -b $entry -B" 0 "Removing entry $entry"
+            done
+
+            OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d: -f2)"
+            rlRun "efibootmgr --bootorder '$OLD_BOOT_ORDER'" 0 "Restore old boot order"
 
             rlFileRestore
             rlRun "rm -f drive_layout{,.new}" 0 "Remove lsblk outputs"
