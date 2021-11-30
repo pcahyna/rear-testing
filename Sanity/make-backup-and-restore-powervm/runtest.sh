@@ -182,8 +182,8 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 :
             else
                 # PowerVM
-                rlRun "bootlist -m normal -r -f bootorder.bak" 0 \
-                    "Restore the original bootorder"
+                BOOTLIST_CMD="bootlist -m normal -r"
+                rlRun "$BOOTLIST_CMD -f bootorder.bak" 0 "Restore the original bootorder"
 
                 # Sanity check that bootlist did not botch setting the new boot
                 # order. Happens on RHEL 7.6 at the moment.
