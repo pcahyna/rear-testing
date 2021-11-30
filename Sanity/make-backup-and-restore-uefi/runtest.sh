@@ -108,12 +108,12 @@ USB_UEFI_PART_SIZE=500' > /etc/rear/local.conf" 0 "Create basic configuration fi
                 0 "Set next boot entry to $REAR_BOOT_ENTRY"
         rlPhaseEnd
 
-        # TODO: this should be convigurable in /etc/rear/local.conf!!!
+        # TODO: this should be configurable in /etc/rear/local.conf!!!
         rlPhaseStartSetup
             rlRun "mount ${REAR_ROOT}1 /mnt" 0 "Mount ${REAR_ROOT}1"
 
             # TODO: Will this work with SecureBoot?
-            # Grub uses different debault boot entry:
+            # Grub uses different default boot entry:
             # set default="0" -> set default="1"
             rlRun "sed -i '/^[ ]*linux/ s/$/ unattended/' /mnt/EFI/BOOT/grub.cfg" 0 "Make the recovery unattended"
             rlRun "umount -R /mnt" 0 "Unmount ${REAR_ROOT}1"
