@@ -80,6 +80,10 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             fi
 
             rlAssertExists bootorder.bak
+            rlAssertExists nvram.bak
+
+            rlFileSubmit bootorder.bak
+            rlFileSubmit nvram.bak
         rlPhaseEnd
 
         rlPhaseStartSetup
@@ -151,8 +155,6 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 rlRun "$BOOTLIST_CMD | tee current_boot_order" 0 "Get the new bootorder"
                 if ! rlAssertNotDiffer current_boot_order expected_new_boot_order; then
                     rlLogWarning "Bootlist botched the bootorder entry!"
-                    rlFileSubmit bootorder.bak
-                    rlFileSubmit nvram.bak
 
                     OLD_BOOT_DEVICE_ENTRY=$(grep '^boot-device=' nvram.bak)
                     rlRun "nvram -p common --update-config '$OLD_BOOT_DEVICE_ENTRY'" \
@@ -189,8 +191,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 # order. Happens on RHEL 7.6 at the moment.
                 rlRun "$BOOTLIST_CMD | tee current_boot_order" 0 "Get the new bootorder"
                 if ! rlAssertNotDiffer current_boot_order bootorder.bak; then
-                    rlDie "bootlist botched the bootorder entry!" \
-                        bootorder.bak nvram.bak
+                    rlDie "bootlist botched the bootorder entry!"
                 fi
                 rlRun "rm -f current_boot_order" 0 "Remove current_boot_order file"
             fi
