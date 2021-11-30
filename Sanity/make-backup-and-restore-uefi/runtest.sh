@@ -50,6 +50,11 @@ rlJournalStart
             if [ $? -eq 1 ]; then
                 rlDie "Machine without UEFI"
             fi
+
+            rlLog "Remove previous REAR boot entries"
+            for entry in $(efibootmgr | grep REAR | cut -c 5-8); do
+                rlRun "efibootmgr -b $entry -B" 0 "Removing entry $entry"
+            done
         rlPhaseEnd
 
         rlPhaseStartSetup
@@ -89,11 +94,6 @@ USB_UEFI_PART_SIZE=500' > /etc/rear/local.conf" 0 "Create basic configuration fi
 
         # TODO save boot order, add disk, restore boot order, set boot next
         rlPhaseStartSetup
-            rlLog "Remove previous REAR boot entries"
-            for entry in $(efibootmgr | grep REAR | cut -c 5-8); do
-                rlRun "efibootmgr -b $entry -B" 0 "Removing entry $entry"
-            done
-
             rlRun "efibootmgr --create --gpt --disk $REAR_ROOT --part 1 --write-signature --label REAR --loader '\EFI\BOOT\BOOTX64.efi'" 0 "Add REAR entry to EFI"
 
             REAR_BOOT_ENTRY="$(efibootmgr | grep REAR)"
