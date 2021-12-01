@@ -142,7 +142,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 # Let bootlist to load the new boot order from a file
                 # so that we don't have to deal with whitespaces.
                 rlRun "$BOOTLIST_CMD | \
-                       sed 's|$OFPATH_LAST_BOOTED|$OFPATH_REAR|' | \
+                       sed 's|$OFPATH_LAST_BOOTED|$OFPATH_REAR\n$OFPATH_LAST_BOOTED|' | \
                        tee expected_new_boot_order" 0 "Generate new boot order"
 
                 # LAN has to be first! If REAR corrupted the machine and haven't
