@@ -173,11 +173,15 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
         # REAR hopefully recovered the OS
         rlPhaseStartTest
             rlAssertNotExists recovery_will_remove_me
+
             rlAssertExists drive_layout
             rlRun -l "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
 
             # FIXME: dd of the ISO changes drive layout!
             # rlAssertNotDiffer drive_layout drive_layout.new
+
+            rlAssertExists bootorder.bak
+            rlAssertExists nvram.bak
         rlPhaseEnd
 
         rlPhaseStartCleanup
