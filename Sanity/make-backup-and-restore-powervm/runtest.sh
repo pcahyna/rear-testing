@@ -112,7 +112,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
 
         rlPhaseStartSetup
             rlRun "dd if='/var/lib/rear/output/rear-$(hostname -s).iso' of=$REAR_ROOT" 0 "Apply ISO to $REAR_ROOT"
-            rlrun "sync" 0 "Sync all writes"
+            rlRun "sync" 0 "Sync all writes"
         rlPhaseEnd
 
         # TODO: check that bootorder.bak was really backed-up.
