@@ -191,18 +191,8 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 :
             else
                 # PowerVM
-                BOOTLIST_CMD="bootlist -m normal -r"
-                rlRun -l "$BOOTLIST_CMD -f bootorder.bak" 0 \
-                         "Restore the original bootorder"
-
-                # Sanity check that bootlist did not botch setting the new boot
-                # order. Happens on RHEL 7.6 at the moment.
-                rlRun -l "$BOOTLIST_CMD | tee current_boot_order" 0 \
-                         "Get the new bootorder"
-                if ! rlAssertNotDiffer current_boot_order bootorder.bak; then
-                    rlDie "bootlist botched the bootorder entry!"
-                fi
-                rlRun "rm -f current_boot_order" 0 "Remove current_boot_order file"
+                rlRun "nvram -p common --update-config 'boot-device=$(cat bootorder.bak)'" \
+                       0 "Set original boot-device"
             fi
 
             rlFileRestore
