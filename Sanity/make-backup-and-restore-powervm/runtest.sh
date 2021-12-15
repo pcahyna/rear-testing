@@ -53,7 +53,7 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "/etc/rear/local.conf"
-            rlRun "echo 'OUTPUT=ISO
+            rlRun -l "echo 'OUTPUT=ISO
 OUTPUT_URL=null
 BACKUP=NETFS
 BACKUP_URL=iso://backup
@@ -66,17 +66,17 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
 
         rlPhaseStartSetup
             # TODO: backup whole /dev/nvram???
-            rlRun "nvram --print-config | tee nvram.bak" 0 \
-                  "Backup NVRAM entries"
+            rlRun -l "nvram --print-config | tee nvram.bak" 0 \
+                     "Backup NVRAM entries"
 
             rlLog "Backup original boot order"
             if grep -q "emulated by qemu" /proc/cpuinfo ; then
                 # PowerKVM
-                rlRun "nvram --print-config=boot-device | tee bootorder.bak" 0 \
-                    "Backup original boot order"
+                rlRun -l "nvram --print-config=boot-device | tee bootorder.bak" 0 \
+                         "Backup original boot order"
             else
                 # PowerVM
-                rlRun "bootlist -m normal -r | tee bootorder.bak" 0 "Backup original bootorder"
+                rlRun -l "bootlist -m normal -r | tee bootorder.bak" 0 "Backup original bootorder"
             fi
 
             rlAssertExists bootorder.bak
@@ -93,7 +93,8 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             REAR_ROOT="/dev/sdb"
 
             rlLog "Selected $REAR_ROOT"
-            rlRun "lsblk | tee drive_layout" 0 "Store lsblk output in recovery image"
+            rlRun -l "lsblk | tee drive_layout" 0 \
+                "Store lsblk output in recovery image"
             rlAssertExists drive_layout
         rlPhaseEnd
 
@@ -141,18 +142,18 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
 
                 # Let bootlist to load the new boot order from a file
                 # so that we don't have to deal with whitespaces.
-                rlRun "$BOOTLIST_CMD | \
-                       sed 's|$OFPATH_LAST_BOOTED|$OFPATH_REAR\n$OFPATH_LAST_BOOTED|' | \
-                       tee expected_new_boot_order" 0 "Generate new boot order"
+                rlRun -l "$BOOTLIST_CMD | \
+                          sed 's|$OFPATH_LAST_BOOTED|$OFPATH_REAR\n$OFPATH_LAST_BOOTED|' | \
+                          tee expected_new_boot_order" 0 "Generate new boot order"
 
                 # LAN has to be first! If REAR corrupted the machine and haven't
                 # changed the boot order yet, the machine would remain broken as
                 # Beaker expects the machine to always boot from LAN first.
-                rlRun "$BOOTLIST_CMD -f expected_new_boot_order" 0 "Set new bootorder"
+                rlRun -l "$BOOTLIST_CMD -f expected_new_boot_order" 0 "Set new bootorder"
 
                 # Sanity check that bootlist did not botch setting the new boot
                 # order. Happens (at least) on RHEL 7.6 at the moment.
-                rlRun "$BOOTLIST_CMD | tee current_boot_order" 0 "Get the new bootorder"
+                rlRun -l "$BOOTLIST_CMD | tee current_boot_order" 0 "Get the new bootorder"
                 if ! rlAssertNotDiffer current_boot_order expected_new_boot_order; then
                     rlLogWarning "Bootlist botched the bootorder entry!"
 
@@ -171,7 +172,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
         rlPhaseStartTest
             rlAssertNotExists recovery_will_remove_me
             rlAssertExists drive_layout
-            rlRun "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
+            rlRun -l "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
 
             # FIXME: dd of the ISO changes drive layout!
             # rlAssertNotDiffer drive_layout drive_layout.new
@@ -185,11 +186,13 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             else
                 # PowerVM
                 BOOTLIST_CMD="bootlist -m normal -r"
-                rlRun "$BOOTLIST_CMD -f bootorder.bak" 0 "Restore the original bootorder"
+                rlRun -l "$BOOTLIST_CMD -f bootorder.bak" 0 \
+                         "Restore the original bootorder"
 
                 # Sanity check that bootlist did not botch setting the new boot
                 # order. Happens on RHEL 7.6 at the moment.
-                rlRun "$BOOTLIST_CMD | tee current_boot_order" 0 "Get the new bootorder"
+                rlRun -l "$BOOTLIST_CMD | tee current_boot_order" 0 \
+                         "Get the new bootorder"
                 if ! rlAssertNotDiffer current_boot_order bootorder.bak; then
                     rlDie "bootlist botched the bootorder entry!"
                 fi
