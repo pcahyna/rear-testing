@@ -156,6 +156,8 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                 rlRun -l "$BOOTLIST_CMD | tee current_boot_order" 0 "Get the new bootorder"
                 if ! rlAssertNotDiffer current_boot_order expected_new_boot_order; then
                     rlLogWarning "Bootlist botched the bootorder entry!"
+                    rlRun -l "diff -u expected_new_boot_order current_boot_order" \
+                        1 "Diff current and expected boot order"
 
                     OLD_BOOT_DEVICE_ENTRY=$(grep '^boot-device=' nvram.bak)
                     rlRun "nvram -p common --update-config '$OLD_BOOT_DEVICE_ENTRY'" \
