@@ -70,34 +70,27 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                      "Backup NVRAM entries"
 
             rlLog "Backup original boot order"
-            if grep -q "emulated by qemu" /proc/cpuinfo ; then
-                # PowerKVM
-                rlRun -l "nvram --print-config=boot-device | tee bootorder.bak" 0 \
+            rlRun -l "nvram --print-config=boot-device | tee bootorder.bak" 0 \
                          "Backup original boot order"
 
-                rlLog "#######################################################"
-                rlLog "#####                   WARNING!                  #####"
-                rlLog "#######################################################"
-                rlLog "Beware that the contents of 'boot-device' NVRAM entry  "
-                rlLog "may become corrupted if ReaR or any tool it depends on "
-                rlLog "does something unexpected!  In such case, fix it before"
-                rlLog "the machine is returned back to Beaker, otherwise it   "
-                rlLog "will be corrupted.                                     "
-                rlLog "                                                       "
-                rlLog "If you can boot to some working instance of RHEL, use  "
-                rlLog "the following command to fix it:                       "
-                rlLog "                                                       "
-                rlLog "nvram -p common --update-config 'boot-device=$(cat bootorder.bak)'"
-                rlLog "                                                       "
-                rlLog "Otherwise, set it directly in the firmware to the      "
-                rlLog "following value:                                       "
-                rlLog "                                                       "
-                rlLog " $(cat bootorder.bak) "
-            else
-
-                # PowerVM
-                rlRun -l "bootlist -m normal -r | tee bootorder.bak" 0 "Backup original bootorder"
-            fi
+            rlLog "#######################################################"
+            rlLog "#####                   WARNING!                  #####"
+            rlLog "#######################################################"
+            rlLog "Beware that the contents of 'boot-device' NVRAM entry  "
+            rlLog "may become corrupted if ReaR or any tool it depends on "
+            rlLog "does something unexpected!  In such case, fix it before"
+            rlLog "the machine is returned back to Beaker, otherwise it   "
+            rlLog "will be corrupted.                                     "
+            rlLog "                                                       "
+            rlLog "If you can boot to some working instance of RHEL, use  "
+            rlLog "the following command to fix it:                       "
+            rlLog "                                                       "
+            rlLog "nvram -p common --update-config 'boot-device=$(cat bootorder.bak)'"
+            rlLog "                                                       "
+            rlLog "Otherwise, set it directly in the firmware to the      "
+            rlLog "following value:                                       "
+            rlLog "                                                       "
+            rlLog " $(cat bootorder.bak) "
 
             rlAssertExists bootorder.bak
             rlAssertExists nvram.bak
