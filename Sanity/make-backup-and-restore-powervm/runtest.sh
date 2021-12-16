@@ -179,11 +179,23 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
                     rlRun -l "diff -u expected_new_boot_order current_boot_order" \
                         1 "Diff current and expected boot order"
 
-                    OLD_BOOT_DEVICE_ENTRY=$(grep '^boot-device=' nvram.bak)
-                    rlRun "nvram -p common --update-config '$OLD_BOOT_DEVICE_ENTRY'" \
-                        0 "Set original boot-device"
+                    # If powerpc-utils-1.3.4-14.el7 are used on RHEL-ALT-7.6
+                    # there will be only a minor (and apparently harmless)
+                    # difference in the network configuration.  It will contain
+                    # the following extra suffix:
+                    #
+                    # :speed=auto,duplex=auto,0.0.0.0,,0.0.0.0,0.0.0.0
+                    if ! grep -q "^$(head -n 1 expected_new_boot_order)" \
+                                <(head -n 1 current_boot_order)          \
+                    || ! cmp -s <(tail -n +2 expected_new_boot_order)    \
+                                <(tail -n +2 current_boot_order); then
+                        rlRun "nvram -p common --update-config 'boot-device=$(cat bootorder.bak)'" \
+                            0 "Set original boot-device"
 
-                    rlDie "Bootlist binary is broken! Stopping so that REAR does not destroy this VM."
+                        rlDie "Bootlist binary is broken! Stopping so that REAR does not destroy this VM."
+                    fi
+
+                    rlLog "The difference made by bootlist is minor. Will continue"
                 fi
             fi
         rlPhaseEnd
