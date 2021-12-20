@@ -49,6 +49,12 @@ rlJournalStart
             if [ "$(awk '/platform/ {print $NF}' < /proc/cpuinfo)" = PowerNV ]; then
                 rlDie "Got PowerNV machine!"
             fi
+
+            if grep -q "emulated by qemu" /proc/cpuinfo ; then
+                rlPass "Got PowerKVM machine!"
+            else
+                rlPass "Got PowerVM machine!"
+            fi
         rlPhaseEnd
 
         rlPhaseStartSetup
