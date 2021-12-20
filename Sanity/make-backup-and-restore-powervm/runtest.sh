@@ -112,9 +112,9 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             REAR_ROOT="/dev/sdb"
 
             rlLog "Selected $REAR_ROOT"
-            rlRun -l "lsblk | tee drive_layout" 0 \
+            rlRun -l "lsblk | tee drive_layout.old" 0 \
                 "Store lsblk output in recovery image"
-            rlAssertExists drive_layout
+            rlAssertExists drive_layout.old
         rlPhaseEnd
 
         rlPhaseStartTest
@@ -205,14 +205,17 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
         rlPhaseStartTest
             rlAssertNotExists recovery_will_remove_me
 
-            rlAssertExists drive_layout
+            rlAssertExists bootorder.bak
+            rlAssertExists drive_layout.old
+            rlAssertExists nvram.bak
+
             rlRun -l "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
 
             # FIXME: dd of the ISO changes drive layout!
-            # rlAssertNotDiffer drive_layout drive_layout.new
-
-            rlAssertExists bootorder.bak
-            rlAssertExists nvram.bak
+            if ! rlAssertNotDiffer drive_layout.old drive_layout.new; then
+                rlRun -l "diff -u drive_layout.old drive_layout.new" \
+                    1 "Diff drive layout changes"
+            fi
         rlPhaseEnd
 
         rlPhaseStartCleanup
@@ -227,7 +230,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             fi
 
             rlFileRestore
-            rlRun "rm -f drive_layout{,.new}" 0 "Remove lsblk outputs"
+            rlRun "rm -f drive_layout.{old,new}" 0 "Remove lsblk outputs"
             rlRun "rm -f bootorder.bak" 0 "Remove bootorder backup"
             rlRun "rm -f nvram.bak" 0 "Remove NVRAM variables backup"
         rlPhaseEnd
