@@ -84,7 +84,7 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "/etc/rear/local.conf"
-            rlRun "echo 'OUTPUT=USB
+            rlRun -l "echo 'OUTPUT=USB
 BACKUP=NETFS
 BACKUP_URL=usb:///dev/disk/by-label/REAR-000
 ISO_DEFAULT=automatic
@@ -117,14 +117,14 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
         rlPhaseEnd
 
         rlPhaseStartSetup
-            rlRun "efibootmgr --create --gpt --disk $REAR_ROOT --part 1 --write-signature --label REAR --loader '\EFI\BOOT\BOOTX64.efi'" 0 "Add REAR entry to EFI"
+            rlRun -l "efibootmgr --create --gpt --disk $REAR_ROOT --part 1 --write-signature --label REAR --loader '\EFI\BOOT\BOOTX64.efi'" 0 "Add REAR entry to EFI"
 
             OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d: -f2)"
-            rlRun "efibootmgr --bootorder '$OLD_BOOT_ORDER'" 0 "Restore old boot order"
+            rlRun -l "efibootmgr --bootorder '$OLD_BOOT_ORDER'" 0 "Restore old boot order"
 
             # will find BootXXXX* REAR
             REAR_BOOT_ENTRY="$(efibootmgr | grep REAR | cut -c 5-8)"
-            rlRun "efibootmgr --bootnext '$REAR_BOOT_ENTRY'" \
+            rlRun -l "efibootmgr --bootnext '$REAR_BOOT_ENTRY'" \
                 0 "Set next boot entry to $REAR_BOOT_ENTRY"
         rlPhaseEnd
 
