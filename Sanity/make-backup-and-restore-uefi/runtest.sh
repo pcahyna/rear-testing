@@ -103,8 +103,8 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
             rlLog "Selected $REAR_ROOT"
             rlRun "rear -v format -- -y --efi $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
 
-            rlRun "lsblk | tee drive_layout" 0 "Store lsblk output in recovery image"
-            rlAssertExists drive_layout
+            rlRun -l "lsblk | tee drive_layout.old" 0 "Store lsblk output in recovery image"
+            rlAssertExists drive_layout.old
         rlPhaseEnd
 
         rlPhaseStartTest
@@ -146,9 +146,14 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
         # REAR hopefully recovered the OS
         rlPhaseStartTest
             rlAssertNotExists recovery_will_remove_me
-            rlAssertExists drive_layout
-            rlRun "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
-            rlAssertNotDiffer drive_layout drive_layout.new
+
+            rlAssertExists drive_layout.old
+
+            rlRun -l "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
+            if ! rlAssertNotDiffer drive_layout.old drive_layout.new; then
+                rlRun -l "diff -u drive_layout.old drive_layout.new" \
+                    1 "Diff drive layout changes"
+            fi
         rlPhaseEnd
 
         rlPhaseStartCleanup
@@ -158,10 +163,11 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
             done
 
             OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d: -f2)"
-            rlRun "efibootmgr --bootorder '$OLD_BOOT_ORDER'" 0 "Restore old boot order"
+            rlRun -l "efibootmgr --bootorder '$OLD_BOOT_ORDER'" \
+                0 "Restore old boot order"
 
             rlFileRestore
-            rlRun "rm -f drive_layout{,.new}" 0 "Remove lsblk outputs"
+            rlRun "rm -f drive_layout.{old,new}" 0 "Remove lsblk outputs"
         rlPhaseEnd
     else
         rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
