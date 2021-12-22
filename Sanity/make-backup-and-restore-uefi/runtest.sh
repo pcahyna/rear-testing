@@ -171,6 +171,7 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
 
             rlFileRestore
             rlRun "rm -f drive_layout.{old,new}" 0 "Remove lsblk outputs"
+            rlRun "rm -f efibootmgr.bak" 0 "Remove efibootmgr backup"
             rlRun "rm -f /root/rear*.log" 0 "Remove ReaR recovery log"
         rlPhaseEnd
     else
