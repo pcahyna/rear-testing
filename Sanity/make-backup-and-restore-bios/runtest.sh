@@ -123,17 +123,21 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
             rlAssertNotExists recovery_will_remove_me
 
             rlAssertExists drive_layout.old
+            rlAssertExists /root/rear*.log
 
             rlRun -l "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
             if ! rlAssertNotDiffer drive_layout.old drive_layout.new; then
                 rlRun -l "diff -u drive_layout.old drive_layout.new" \
                     1 "Diff drive layout changes"
             fi
+
+            rlFileSubmit /root/rear*.log
         rlPhaseEnd
 
         rlPhaseStartCleanup
             rlFileRestore
             rlRun "rm -f drive_layout.{old,new}" 0 "Remove lsblk outputs"
+            rlRun "rm -f /root/rear*.log" 0 "Remove ReaR recovery log"
         rlPhaseEnd
 
     else
