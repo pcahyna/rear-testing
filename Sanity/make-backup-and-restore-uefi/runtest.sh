@@ -56,7 +56,27 @@ rlJournalStart
                 rlRun "efibootmgr -b $entry -B" 0 "Removing entry $entry"
             done
 
-            rlRun "efibootmgr | tee efibootmgr.bak" "Create efibootmgr.bak"
+            rlRun -l "efibootmgr | tee efibootmgr.bak" "Create efibootmgr.bak"
+            OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d: -f2)"
+
+            rlLog "#######################################################"
+            rlLog "#####                   WARNING!                  #####"
+            rlLog "#######################################################"
+            rlLog "Beware that the BootOrder EFI variable may contain     "
+            rlLog "unexpected values if ReaR or any tool it depends on    "
+            rlLog "does something unexpected!  In such case, fix it before"
+            rlLog "the machine is returned back to Beaker, otherwise it   "
+            rlLog "will be corrupted.                                     "
+            rlLog "                                                       "
+            rlLog "If you can boot to some working instance of RHEL, use  "
+            rlLog "the following command to fix it:                       "
+            rlLog "                                                       "
+            rlLog "efibootmgr --bootorder '$OLD_BOOT_ORDER'               "
+            rlLog "                                                       "
+            rlLog "Otherwise, set it directly in the firmware to the      "
+            rlLog "following value:                                       "
+            rlLog "                                                       "
+            rlLog "$OLD_BOOT_ORDER                                        "
 
             rlAssertExists efibootmgr.bak
             rlFileSubmit efibootmgr.bak
