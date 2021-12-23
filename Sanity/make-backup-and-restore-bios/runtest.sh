@@ -33,7 +33,7 @@ PACKAGE="rear"
 ADDITONAL_PACKAGES=("syslinux-extlinux")
 
 rlJournalStart
-    if [ "$REBOOTCOUNT" -eq 0 ]; then
+    if [ "$REBOOT_COUNT" -eq 0 ]; then
         # Fresh start
         rlPhaseStartSetup
             rlAssertRpm $PACKAGE
@@ -116,7 +116,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
 
         rhts-reboot
 
-    elif [ "$REBOOTCOUNT" -eq 1 ]; then
+    elif [ "$REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
         rlPhaseStartTest
             rlAssertNotExists recovery_will_remove_me
@@ -131,7 +131,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
         rlPhaseEnd
 
     else
-        rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
+        rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOT_COUNT"
     fi
 
 rlJournalPrintText
