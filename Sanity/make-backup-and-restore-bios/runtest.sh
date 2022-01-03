@@ -68,7 +68,11 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
             # else
             #     rlLog "Selected $REAR_ROOT"
             # fi
-            REAR_ROOT=/dev/vdb
+            if [ "$(systemd-detect-virt)" = "kvm" ]; then
+                REAR_ROOT=/dev/vdb
+            else
+                REAR_ROOT=/dev/sdb
+            fi
 
             rlLog "Selected $REAR_ROOT"
             rlRun "rear -v format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
