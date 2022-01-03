@@ -56,7 +56,7 @@ rlJournalStart
                 rlRun "efibootmgr -b $entry -B" 0 "Removing entry $entry"
             done
 
-            rlRun -l "efibootmgr | tee efibootmgr.bak" "Create efibootmgr.bak"
+            rlRun -l "efibootmgr | tee efibootmgr.bak" 0 "Create efibootmgr.bak"
             OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d: -f2)"
 
             rlLog "#######################################################"
