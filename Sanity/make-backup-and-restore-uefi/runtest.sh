@@ -169,6 +169,10 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
             rlRun -l "efibootmgr --bootorder '$OLD_BOOT_ORDER'" \
                 0 "Restore old boot order"
 
+            # TODO: Compare efibootmgr output?
+            # ReaR creates a fresh EFI variable for the recovered system so the
+            # output will not be a perfect match.
+
             rlFileRestore
             rlRun "rm -f drive_layout.{old,new}" 0 "Remove lsblk outputs"
             rlRun "rm -f efibootmgr.bak" 0 "Remove efibootmgr backup"
