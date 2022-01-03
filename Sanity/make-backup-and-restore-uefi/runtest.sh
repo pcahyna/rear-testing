@@ -57,7 +57,7 @@ rlJournalStart
             done
 
             rlRun -l "efibootmgr | tee efibootmgr.bak" 0 "Create efibootmgr.bak"
-            OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d: -f2)"
+            OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d' ' -f2)"
 
             rlLog "#######################################################"
             rlLog "#####                   WARNING!                  #####"
@@ -119,7 +119,7 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
         rlPhaseStartSetup
             rlRun -l "efibootmgr --create --gpt --disk $REAR_ROOT --part 1 --write-signature --label REAR --loader '\EFI\BOOT\BOOTX64.efi'" 0 "Add REAR entry to EFI"
 
-            OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d: -f2)"
+            OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d' ' -f2)"
             rlRun -l "efibootmgr --bootorder '$OLD_BOOT_ORDER'" 0 "Restore old boot order"
 
             # will find BootXXXX* REAR
@@ -165,7 +165,7 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
                 rlRun "efibootmgr -b $entry -B" 0 "Removing entry $entry"
             done
 
-            OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d: -f2)"
+            OLD_BOOT_ORDER="$(grep '^BootOrder' efibootmgr.bak | cut -d' ' -f2)"
             rlRun -l "efibootmgr --bootorder '$OLD_BOOT_ORDER'" \
                 0 "Restore old boot order"
 
