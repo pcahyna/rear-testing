@@ -54,7 +54,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
             rlAssertExists "/etc/rear/local.conf"
         rlPhaseEnd
 
-        rlPhaseStartSetup
+        rlPhaseStartTest
             rlLog "Select device for REAR"
 
             # TODO: does not work due to bug in anaconda (and would be unreliable either way)
@@ -76,12 +76,19 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
 
             rlLog "Selected $REAR_ROOT"
             rlRun "rear -v format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
+            if ! rlGetPhaseState; then
+                rlDie "FATAL ERROR: rear -v format -- -y $REAR_ROOT failed"
+            fi
+
             rlRun -l "lsblk | tee drive_layout.old" 0 "Store lsblk output in recovery image"
             rlAssertExists drive_layout.old
         rlPhaseEnd
 
         rlPhaseStartTest
             rlRun "rear -v mkbackup" 0 "Creating backup to $REAR_ROOT"
+            if ! rlGetPhaseState; then
+                rlDie "FATAL ERROR: rear -v mkbackup failed"
+            fi
         rlPhaseEnd
 
         rlPhaseStartSetup
