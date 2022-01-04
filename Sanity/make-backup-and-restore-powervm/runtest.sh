@@ -120,6 +120,10 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
         rlPhaseStartTest
             rlRun "rear -v mkbackup" 0 "Creating backup to $REAR_ROOT"
             rlAssertExists "/var/lib/rear/output/rear-$(hostname -s).iso"
+
+            if ! rlGetPhaseState; then
+                rlDie "FATAL ERROR: rear -v mkbackup failed"
+            fi
         rlPhaseEnd
 
         rlPhaseStartSetup
