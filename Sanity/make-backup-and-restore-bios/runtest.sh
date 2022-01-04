@@ -28,6 +28,8 @@
 # Include Beaker environment
 . /usr/share/beakerlib/beakerlib.sh || exit 1
 
+REBOOT_COUNT=${REBOOT_COUNT:-0}
+
 PACKAGE="rear"
 # FIXME: Remove
 ADDITONAL_PACKAGES=("syslinux-extlinux")
