@@ -102,6 +102,9 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
 
             rlLog "Selected $REAR_ROOT"
             rlRun "rear -v format -- -y --efi $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
+            if ! rlGetPhaseState; then
+                rlDie "FATAL ERROR: rear -v format -- -y --efi $REAR_ROOT failed"
+            fi
 
             rlRun -l "lsblk | tee drive_layout.old" 0 "Store lsblk output in recovery image"
             rlAssertExists drive_layout.old
@@ -109,6 +112,9 @@ USB_UEFI_PART_SIZE=500' | tee /etc/rear/local.conf" 0 "Create basic configuratio
 
         rlPhaseStartTest
             rlRun "rear -v mkbackup" 0 "Creating backup to $REAR_ROOT"
+            if ! rlGetPhaseState; then
+                rlDie "FATAL ERROR: rear -v mkbackup failed"
+            fi
         rlPhaseEnd
 
         rlPhaseStartSetup
