@@ -101,6 +101,24 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
             rlRun "grub2-editenv list | grep 'saved_entry=REAR' > /dev/null"
         rlPhaseEnd
 
+        rlPhaseStartSetup
+	# my own changes
+	rlRun "extlinux --install /boot/extlinux"
+	rlRun "echo 'DEFAULT rear
+	PROMPT 1
+	SAY That is boot from extlinux...
+	TIMEOUT 100
+
+LABEL linux
+	KERNEL /vmlinuz-$KERNEL_VERSION
+	APPEND initrd=/initramfs-$KERNEL_VERSION.img root=/dev/vda2
+
+LABEL rear
+	KERNEL /extlinux/chain.c32
+	APPEND hd1' > /boot/extlinux/extlinux.conf"
+	    rlRun "cat /usr/share/syslinux/mbr.bin > /dev/vda"
+        rlPhaseEnd
+
         # TODO: should be configurable in /etc/rear/local.conf!!!
         rlPhaseStartSetup
             rlLog "Make REAR autoboot to unattended recovery"
