@@ -87,22 +87,6 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
         rlPhaseEnd
 
         rlPhaseStartSetup
-            rlLog "Add REAR entry to GRUB 2"
-            rlRun "echo 'menuentry \"REAR\" {
-    drivemap --swap hd0 hd1
-    chainloader (hd1)+1
-    boot
-}' >> /etc/grub.d/40_custom"
-            rlAssertExists "/etc/grub.d/40_custom"
-            rlRun "chmod u+x /etc/grub.d/40_custom"
-            rlRun "cat /etc/grub.d/40_custom"
-            rlRun "grub2-mkconfig -o /boot/grub2/grub.cfg"
-            rlRun "grub2-set-default REAR"
-            rlRun "grub2-editenv list | grep 'saved_entry=REAR' > /dev/null"
-        rlPhaseEnd
-
-        rlPhaseStartSetup
-	# my own changes
 	rlRun "extlinux --install /boot/extlinux"
 	rlRun "echo 'DEFAULT rear
 	PROMPT 1
