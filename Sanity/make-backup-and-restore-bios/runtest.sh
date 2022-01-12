@@ -96,21 +96,6 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
             rlAssertExists recovery_will_remove_me
         rlPhaseEnd
 
-        rlPhaseStartSetup
-            rlLog "Add REAR entry to GRUB 2"
-            rlRun "echo 'menuentry \"REAR\" {
-    drivemap --swap hd0 hd1
-    chainloader (hd1)+1
-    boot
-}' >> /etc/grub.d/40_custom"
-            rlAssertExists "/etc/grub.d/40_custom"
-            rlRun "chmod u+x /etc/grub.d/40_custom"
-            rlRun "cat /etc/grub.d/40_custom"
-            rlRun "grub2-mkconfig -o /boot/grub2/grub.cfg"
-            rlRun "grub2-set-default REAR"
-            rlRun "grub2-editenv list | grep 'saved_entry=REAR' > /dev/null"
-        rlPhaseEnd
-
         # TODO: should be configurable in /etc/rear/local.conf!!!
         rlPhaseStartSetup
             rlLog "Make REAR autoboot to unattended recovery"
@@ -124,6 +109,39 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
             rlRun "sed -z -i 's/label[^\n]*\(\n[^\n]*AUTOMATIC\)/label rear-unattended\1/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (2/2)"
             rlRun "sed -i 's/auto_recover/unattended/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Pass 'unattended' to kernel command-line"
             rlRun "umount -R /mnt/rear" 0 "Unmount REAR partition"
+        rlPhaseEnd
+
+        # Use extlinux to chainload ReaR instead of GRUB as that did not work
+        # on some systems.
+        rlPhaseStartSetup
+            ROOT_DEVICE="$(lsblk -no pkname "$(df --output=source /boot | tail -n1)")"
+            KERNEL_VERSION="$(uname -r)"
+            KERNEL_CMDLINE="$(grub2-editenv list | grep kernelopts | cut -d= -f2-)"
+            SERIAL_DEVICE="$(sed -e 's/.*console=ttyS\([^ ]*\).*/\1/' \
+                             <<< "$KERNEL_CMDLINE" | tr ',' ' ')"
+            rlRun "extlinux --install /boot/extlinux" \
+                 0 "Install extlinux to chainload ReaR"
+            rlRun "echo 'SERIAL $SERIAL_DEVICE
+UI menu.c32
+PROMPT 0
+
+MENU TITLE ReaR Chainload Boot Menu
+TIMEOUT 50
+
+LABEL linux
+    MENU LABEL RHEL
+    LINUX ../vmlinuz-$KERNEL_VERSION
+    APPEND $KERNEL_CMDLINE
+    INITRD ../initramfs-$KERNEL_VERSION.img
+
+LABEL rear
+    MENU LABEL Chainload ReaR from hd1
+    MENU DEFAULT
+    COM32 chain.c32
+    APPEND hd1' | tee /boot/extlinux/extlinux.conf" \
+                0 "Save extlinux configuration"
+            rlRun "cat /usr/share/syslinux/mbr.bin > /dev/$ROOT_DEVICE" \
+                0 "Write syslinux to /dev/$ROOT_DEVICE MBR"
         rlPhaseEnd
 
         rhts-reboot
