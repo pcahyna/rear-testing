@@ -118,7 +118,7 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
         rlPhaseEnd
 
         rlPhaseStartTest
-            rlRun "rear -v mkbackup" 0 "Creating backup to $REAR_ROOT"
+            rlRun "rear -v mkbackup" 0 "Creating backup ISO"
             rlAssertExists "/var/lib/rear/output/rear-$(hostname -s).iso"
 
             if ! rlGetPhaseState; then
@@ -131,12 +131,20 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             rlAssertExists recovery_will_remove_me
         rlPhaseEnd
 
-        # TODO: make the recovery unattended!
-        # should be configurable in /etc/rear/local.conf!!!
-
+        # TODO: unattended recovery should be configurable in
+        # /etc/rear/local.conf!!!
         rlPhaseStartSetup
-            rlRun "dd if='/var/lib/rear/output/rear-$(hostname -s).iso' of=$REAR_ROOT" 0 "Apply ISO to $REAR_ROOT"
+            rlRun "xorriso -dev '/var/lib/rear/output/rear-$(hostname -s).iso' -osirrox on -cpx /boot/grub/grub.cfg $PWD/grub.cfg" \
+                0 "Get grub.cfg from the ISO image"
+            rlRun "sed -i '/^[[:blank:]]*linux/s/$/ unattended/' grub.cfg" \
+                0 "Add 'unattended' to kernel cmdline"
+            rlRun "xorriso -indev '/var/lib/rear/output/rear-$(hostname -s).iso' -update $PWD/grub.cfg /boot/grub/grub.cfg -outdev - | dd of=$REAR_ROOT" \
+                0 "Update grub.cfg and apply ISO to $REAR_ROOT"
             rlRun "sync" 0 "Sync all writes"
+
+            if ! rlGetPhaseState; then
+                rlDie "FATAL ERROR: Applying ISO to $REAR_ROOT failed"
+            fi
         rlPhaseEnd
 
         # TODO: check that bootorder.bak was really backed-up.
