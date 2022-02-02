@@ -222,9 +222,16 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             rlAssertExists nvram.bak
             rlAssertExists /root/rear*.log
 
-            rlRun -l "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
+            # Check that REAR did not overwrite itself
+            rlAssertExists /dev/disk/by-label/RELAXRECOVER
+            REAR_DEV="$(realpath /dev/disk/by-label/RELAXRECOVER | xargs basename)"
 
-            # FIXME: dd of the ISO changes drive layout!
+            # dd changes disk layout so skip $REAR_DEV is we already know that
+            # REAR did not overwrite itself
+            rlLog "ReaR is on $REAR_DEV, $REAR_DEV will be skipped in the following comparison"
+            rlRun -l "lsblk | grep -v '$REAR_DEV' | tee drive_layout.new" \
+                0 "Get current lsblk output"
+
             if ! rlAssertNotDiffer drive_layout.old drive_layout.new; then
                 rlRun -l "diff -u drive_layout.old drive_layout.new" \
                     1 "Diff drive layout changes"
