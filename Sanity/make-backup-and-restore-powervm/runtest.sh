@@ -110,9 +110,12 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
 
             # TODO: disk selection
             REAR_ROOT="/dev/sdb"
-
             rlLog "Selected $REAR_ROOT"
-            rlRun -l "lsblk | tee drive_layout.old" 0 \
+
+            # Use --raw as the size column would otherwise have a different
+            # width after the ISO was applied to $REAR_ROOT.  Even though the
+            # output would be still correct.
+            rlRun -l "lsblk --raw | tee drive_layout.old" 0 \
                 "Store lsblk output in recovery image"
             rlAssertExists drive_layout.old
         rlPhaseEnd
@@ -229,7 +232,11 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Create basic configu
             # dd changes disk layout so skip $REAR_DEV is we already know that
             # REAR did not overwrite itself
             rlLog "ReaR is on $REAR_DEV, $REAR_DEV will be skipped in the following comparison"
-            rlRun -l "lsblk | grep -v '$REAR_DEV' | tee drive_layout.new" \
+
+            # Use --raw as the size column would otherwise have a different
+            # width after the ISO was applied to $REAR_ROOT.  Even though the
+            # output would be still correct.
+            rlRun -l "lsblk --raw | grep -v '^$REAR_DEV' | tee drive_layout.new" \
                 0 "Get current lsblk output"
 
             if ! rlAssertNotDiffer drive_layout.old drive_layout.new; then
