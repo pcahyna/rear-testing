@@ -2,7 +2,7 @@
 # vim: dict+=/usr/share/beakerlib/dictionary.vim cpt=.,w,b,u,t,i,k
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   runtest.sh of /CoreOS/rear/Sanity/rear-basic
+#   runtest.sh of /CoreOS/rear/Sanity/make-backup-and-restore-powervm
 #   Description: Test basic functionality of REAR on PowerVM machines.
 #   Author: Lukas Zaoral <lzaoral@redhat.com>
 #

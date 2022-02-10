@@ -1,6 +1,6 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   Makefile of /CoreOS/rear/Sanity/rear-basic
+#   Makefile of /CoreOS/rear/Sanity/make-backup-and-restore-powervm
 #   Description: Test basic functionality of REAR on PowerVM machines.
 #   Author: Lukas Zaoral <lzaoral@redhat.com>
 #
