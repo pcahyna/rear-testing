@@ -2,7 +2,7 @@
 # vim: dict+=/usr/share/beakerlib/dictionary.vim cpt=.,w,b,u,t,i,k
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   runtest.sh of /CoreOS/rear/Sanity/rear-basic
+#   runtest.sh of /CoreOS/rear/Sanity/make-backup-and-restore-uefi
 #   Description: Test basic functionality of REAR on systems with UEFI.
 #   Author: Lukas Zaoral <lzaoral@redhat.com>
 #

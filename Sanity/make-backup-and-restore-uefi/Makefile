@@ -1,6 +1,6 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   Makefile of /CoreOS/rear/Sanity/rear-basic
+#   Makefile of /CoreOS/rear/Sanity/make-backup-and-restore-uefi
 #   Description: Test basic functionality of REAR on systems with UEFI.
 #   Author: Lukas Zaoral <lzaoral@redhat.com>
 #
