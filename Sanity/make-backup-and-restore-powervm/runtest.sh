@@ -29,13 +29,13 @@
 . /usr/bin/rhts-environment.sh || exit 1
 . /usr/share/beakerlib/beakerlib.sh || exit 1
 
-PACKAGE="rear"
+PACKAGES="rear powerpc-utils"
 
 rlJournalStart
     if [ "$REBOOTCOUNT" -eq 0 ]; then
         # Fresh start
         rlPhaseStartSetup
-            rlAssertRpm $PACKAGE
+            rlAssertRpm --all
         rlPhaseEnd
 
         # Sanity check
