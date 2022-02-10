@@ -29,19 +29,13 @@
 . /usr/bin/rhts-environment.sh || exit 1
 . /usr/share/beakerlib/beakerlib.sh || exit 1
 
-PACKAGE="rear"
-# FIXME: Remove
-ADDITONAL_PACKAGES=("syslinux-extlinux")
+PACKAGES="rear syslinux-extlinux"
 
 rlJournalStart
     if [ "$REBOOTCOUNT" -eq 0 ]; then
         # Fresh start
         rlPhaseStartSetup
-            rlAssertRpm $PACKAGE
-            rlRun "dnf install -y ${ADDITONAL_PACKAGES[*]}" 0 "Install ${ADDITONAL_PACKAGES[*]}"
-            for p in "${ADDITONAL_PACKAGES[@]}"; do
-                rlAssertRpm "$p"
-            done
+            rlAssertRpm --all
         rlPhaseEnd
 
         rlPhaseStartSetup
