@@ -1,6 +1,6 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-#   Makefile of /CoreOS/rear/Sanity/rear-basic
+#   Makefile of /CoreOS/rear/Sanity/make-backup-and-restore-bios
 #   Description: Test basic functionality of REAR on systems with BIOS.
 #   Author: Lukas Zaoral <lzaoral@redhat.com>
 #
