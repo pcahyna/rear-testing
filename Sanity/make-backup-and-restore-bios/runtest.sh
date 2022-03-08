@@ -103,6 +103,10 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
             rlRun "sed -z -i 's/label[^\n]*\(\n[^\n]*AUTOMATIC\)/label rear-unattended\1/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (2/2)"
             rlRun "sed -i 's/auto_recover/unattended/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Pass 'unattended' to kernel command-line"
             rlRun "umount -R /mnt/rear" 0 "Unmount REAR partition"
+
+            if ! rlGetPhaseState; then
+                rlDie "FATAL ERROR: failed to make the recovery unattended"
+            fi
         rlPhaseEnd
 
         # Use extlinux to chainload ReaR instead of GRUB as that did not work
@@ -136,6 +140,9 @@ LABEL rear
                 0 "Save extlinux configuration"
             rlRun "cat /usr/share/syslinux/mbr.bin > /dev/$ROOT_DEVICE" \
                 0 "Write syslinux to /dev/$ROOT_DEVICE MBR"
+            if ! rlGetPhaseState; then
+                rlDie "FATAL ERROR: Installing syslinux failed"
+            fi
         rlPhaseEnd
 
         rhts-reboot
