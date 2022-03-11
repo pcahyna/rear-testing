@@ -69,9 +69,10 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
             fi
 
             rlLog "Selected $REAR_ROOT"
-            rlRun "rear -v format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
+            rlRun "rear -d format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
+            rlFileSubmit /var/log/rear/rear*.log rear-format.log
             if ! rlGetPhaseState; then
-                rlDie "FATAL ERROR: rear -v format -- -y $REAR_ROOT failed"
+                rlDie "FATAL ERROR: rear -d format -- -y $REAR_ROOT failed. See rear-format.log for details."
             fi
 
             rlRun -l "lsblk | tee drive_layout.old" 0 "Store lsblk output in recovery image"
@@ -79,9 +80,10 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
         rlPhaseEnd
 
         rlPhaseStartTest
-            rlRun "rear -v mkbackup" 0 "Creating backup to $REAR_ROOT"
+            rlRun "rear -d mkbackup" 0 "Creating backup to $REAR_ROOT"
+            rlFileSubmit /var/log/rear/rear*.log rear-mkbackup.log
             if ! rlGetPhaseState; then
-                rlDie "FATAL ERROR: rear -v mkbackup failed"
+                rlDie "FATAL ERROR: rear -d mkbackup failed. See rear-mkbackup.log for details."
             fi
         rlPhaseEnd
 
@@ -161,7 +163,7 @@ LABEL rear
                     1 "Diff drive layout changes"
             fi
 
-            rlFileSubmit /root/rear*.log
+            rlFileSubmit /root/rear*.log rear-recover.log
         rlPhaseEnd
 
         rlPhaseStartCleanup
