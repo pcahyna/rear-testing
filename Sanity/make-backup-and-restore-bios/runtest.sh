@@ -38,7 +38,12 @@ rlJournalStart
     if [ "$REBOOTCOUNT" -eq 0 ]; then
         rhts-reboot
     elif [ "$REBOOTCOUNT" -eq 1 ]; then
-	    rlRun "echo 'rebooted!!!'"
+	    rlPhaseStartTest
+	    	rlRun "echo 'rebooted!!!'"
+	    rlPhaseEnd
+
+	    rlPhaseStartCleanup
+	    rlPhaseEnd
     else
         rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
     fi
