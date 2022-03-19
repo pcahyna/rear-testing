@@ -28,19 +28,19 @@
 # Include Beaker environment
 . /usr/share/beakerlib/beakerlib.sh || exit 1
 
-REBOOT_COUNT=${REBOOT_COUNT:-0}
+REBOOTCOUNT=${REBOOTCOUNT:-0}
 
 PACKAGE="rear"
 # FIXME: Remove
 ADDITONAL_PACKAGES=("syslinux-extlinux")
 
 rlJournalStart
-    if [ "$REBOOT_COUNT" -eq 0 ]; then
+    if [ "$REBOOTCOUNT" -eq 0 ]; then
         rhts-reboot
-    elif [ "$REBOOT_COUNT" -eq 1 ]; then
+    elif [ "$REBOOTCOUNT" -eq 1 ]; then
 	    rlRun "echo 'rebooted!!!'"
     else
-        rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOT_COUNT"
+        rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
     fi
 
 rlJournalPrintText
