@@ -94,8 +94,8 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
 	TIMEOUT 100
 
 LABEL linux
-	KERNEL /vmlinuz-$KERNEL_VERSION
-	APPEND initrd=/initramfs-$KERNEL_VERSION.img root=/dev/vda2
+	KERNEL ../vmlinuz-$KERNEL_VERSION
+	APPEND initrd=../initramfs-$KERNEL_VERSION.img root=/dev/vda2
 
 LABEL rear
 	KERNEL /extlinux/chain.c32
