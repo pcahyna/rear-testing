@@ -47,11 +47,13 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "/etc/rear/local.conf"
-            rlRun "echo 'OUTPUT=USB
-BACKUP=NETFS
-BACKUP_URL=usb:///dev/disk/by-label/REAR-000
+            rlRun "echo 'OUTPUT=ISO
 ISO_DEFAULT=automatic
-ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic configuration file"
+ISO_RECOVER_MODE=unattended
+OUTPUT_URL=null
+BACKUP=NETFS
+GRUB_RESCUE=y
+BACKUP_URL="nfs:://192.168.124.23/var/tmp/nfsshare" ' | tee /etc/rear/local.conf" 0 "Creating basic configuration file"
             rlAssertExists "/etc/rear/local.conf"
         rlPhaseEnd
 
