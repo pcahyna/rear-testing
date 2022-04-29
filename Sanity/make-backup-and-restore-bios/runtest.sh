@@ -36,7 +36,7 @@ ADDITONAL_PACKAGES=("syslinux-extlinux")
 
 NFS_SERVER_IP=$(cat /etc/hosts | grep server | awk '{print $1}')
 
-REAR_ROOT="/root/rear"
+REAR_ROOT=""
 REAR_BIN="$REAR_ROOT/usr/sbin/rear"
 REAR_CONFIG="$REAR_ROOT/etc/rear/local.conf"
 REAR_HOME_DIRECTORY="/root"
