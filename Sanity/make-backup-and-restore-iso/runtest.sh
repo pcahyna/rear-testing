@@ -49,32 +49,20 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "$REAR_CONFIG"
-            rlRun "echo 'OUTPUT=USB
+            rlRun "echo 'OUTPUT=ISO
+USER_INPUT_TIMEOUT=10
 BACKUP=NETFS
-BACKUP_URL=usb:///dev/disk/by-label/REAR-000
+BACKUP_URL=iso:///backup
+OUTPUT_URL=null
+# 4gb backup limit
+PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe loop;\" \"dd if=/tmp/mnt/root/rear/var/lib/rear/output/rear-fedora.iso of=/dev/cdrom;\" \"umount /tmp/mnt/;\")
+ISO_FILE_SIZE_LIMIT=4294967296
 ISO_DEFAULT=automatic
 ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
             rlAssertExists "$REAR_CONFIG"
         rlPhaseEnd
 
-        rlPhaseStartSetup
-            rlLog "Select device for REAR"
-
-            # TODO: does not work due to bug in anaconda (and would be unreliable either way)
-            # for dev in $(lsblk -o name -lpn); do
-            #     if [[ "$(grub2-probe --target=drive --device "$dev")" = "(hd1)" ]]; then
-            #         REAR_ROOT="$dev"
-            #     fi
-            # done
-            # if [[ -z "$REAR_ROOT" ]]; then
-            #     rlDie "This machine does not have a usable disk"
-            # else
-            #     rlLog "Selected $REAR_ROOT"
-            # fi
-            REAR_ROOT=/dev/vdb
-
-            rlLog "Selected $REAR_ROOT"
-            rlRun "rear -v format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
+        rlPhaseStartTest
             rlRun -l "lsblk | tee $REAR_HOME_DIRECTORY/drive_layout.old" 0 "Store lsblk output in recovery image"
             rlAssertExists $REAR_HOME_DIRECTORY/drive_layout.old
         rlPhaseEnd
@@ -89,33 +77,13 @@ ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration
         rlPhaseEnd
 
         rlPhaseStartSetup
-            rlLog "Add REAR entry to GRUB 2"
-            rlRun "echo 'menuentry \"REAR\" {
-    drivemap --swap hd0 hd1
-    chainloader (hd1)+1
-    boot
-}' >> /etc/grub.d/40_custom"
-            rlAssertExists "/etc/grub.d/40_custom"
-            rlRun "chmod u+x /etc/grub.d/40_custom"
-            rlRun "cat /etc/grub.d/40_custom"
-            rlRun "grub2-mkconfig -o /boot/grub2/grub.cfg"
-            rlRun "grub2-set-default REAR"
-            rlRun "grub2-editenv list | grep 'saved_entry=REAR' > /dev/null"
-        rlPhaseEnd
-
-        # TODO: should be configurable in /etc/rear/local.conf!!!
-        rlPhaseStartSetup
-            rlLog "Make REAR autoboot to unattended recovery"
-            rlRun "mkdir /mnt/rear" 0 "Make /mnt/rear"
-            rlRun "mount ${REAR_ROOT}1 /mnt/rear" 0 "Mount REAR partition"
-            rlRun "sed -i '/^ontimeout/d' /mnt/rear/boot/syslinux/extlinux.conf" 0 "Disable hd1 autoboot on timeout"
-
-            HOSTNAME_SHORT=$(hostname --short)
-            rlRun "sed -i '/^menu begin/i default $HOSTNAME_SHORT' /mnt/rear/rear/syslinux.cfg" 0 "Set recovery menu as default boot target"
-            rlRun "sed -i '1idefault rear-unattended' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (1/2)"
-            rlRun "sed -z -i 's/label[^\n]*\(\n[^\n]*AUTOMATIC\)/label rear-unattended\1/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (2/2)"
-            rlRun "sed -i 's/auto_recover/unattended/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Pass 'unattended' to kernel command-line"
-            rlRun "umount -R /mnt/rear" 0 "Unmount REAR partition"
+            rlLog "Setup GRUB"
+            rlRun "echo 'menuentry \"ReaR-recover\" {
+  loopback loop (hd0,msdos2)/root/rear/var/lib/rear/output/rear-fedora.iso
+  linux (loop)/isolinux/kernel rw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
+  initrd (loop)/isolinux/initrd.cgz
+}
+set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
 
         rhts-reboot
