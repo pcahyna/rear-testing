@@ -43,41 +43,20 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "$REAR_CONFIG"
-            rlRun "echo 'OUTPUT=USB
+            rlRun "echo 'OUTPUT=ISO
+USER_INPUT_TIMEOUT=10
 BACKUP=NETFS
-BACKUP_URL=usb:///dev/disk/by-label/REAR-000
+BACKUP_URL=iso:///backup
+OUTPUT_URL=null
+# 4gb backup limit
+PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe loop;\" \"dd if=/tmp/mnt/root/rear/var/lib/rear/output/rear-fedora.iso of=/dev/cdrom;\" \"umount /tmp/mnt/;\")
+ISO_FILE_SIZE_LIMIT=4294967296
 ISO_DEFAULT=automatic
 ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
             rlAssertExists "$REAR_CONFIG"
         rlPhaseEnd
 
         rlPhaseStartTest
-            rlLog "Select device for REAR"
-
-            # TODO: does not work due to bug in anaconda (and would be unreliable either way)
-            # for dev in $(lsblk -o name -lpn); do
-            #     if [[ "$(grub2-probe --target=drive --device "$dev")" = "(hd1)" ]]; then
-            #         REAR_ROOT="$dev"
-            #     fi
-            # done
-            # if [[ -z "$REAR_ROOT" ]]; then
-            #     rlDie "This machine does not have a usable disk"
-            # else
-            #     rlLog "Selected $REAR_ROOT"
-            # fi
-            if [ "$(systemd-detect-virt)" = "kvm" ]; then
-                REAR_ROOT=/dev/vdb
-            else
-                REAR_ROOT=/dev/sdb
-            fi
-
-            rlLog "Selected $REAR_ROOT"
-            rlRun "$REAR_BIN -d format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
-            rlFileSubmit /var/log/rear/rear*.log rear-format.log
-            if ! rlGetPhaseState; then
-                rlDie "FATAL ERROR: $REAR_BIN -d format -- -y $REAR_ROOT failed. See rear-format.log for details."
-            fi
-
             rlRun -l "lsblk | tee $REAR_HOME_DIRECTORY/drive_layout.old" 0 "Store lsblk output in recovery image"
             rlAssertExists $REAR_HOME_DIRECTORY/drive_layout.old
         rlPhaseEnd
@@ -95,59 +74,14 @@ ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration
             rlAssertExists recovery_will_remove_me
         rlPhaseEnd
 
-        # TODO: should be configurable in /etc/rear/local.conf!!!
         rlPhaseStartSetup
-            rlLog "Make REAR autoboot to unattended recovery"
-            rlRun "mkdir /mnt/rear" 0 "Make /mnt/rear"
-            rlRun "mount ${REAR_ROOT}1 /mnt/rear" 0 "Mount REAR partition"
-            rlRun "sed -i '/^ontimeout/d' /mnt/rear/boot/syslinux/extlinux.conf" 0 "Disable hd1 autoboot on timeout"
-
-            HOSTNAME_SHORT=$(hostname --short)
-            rlRun "sed -i '/^menu begin/i default $HOSTNAME_SHORT' /mnt/rear/rear/syslinux.cfg" 0 "Set recovery menu as default boot target"
-            rlRun "sed -i '1idefault rear-unattended' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (1/2)"
-            rlRun "sed -z -i 's/label[^\n]*\(\n[^\n]*AUTOMATIC\)/label rear-unattended\1/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Set latest backup as default boot target (2/2)"
-            rlRun "sed -i 's/auto_recover/unattended/' /mnt/rear/rear/$HOSTNAME_SHORT/*/syslinux.cfg" 0 "Pass 'unattended' to kernel command-line"
-            rlRun "umount -R /mnt/rear" 0 "Unmount REAR partition"
-
-            if ! rlGetPhaseState; then
-                rlDie "FATAL ERROR: failed to make the recovery unattended"
-            fi
-        rlPhaseEnd
-
-        # Use extlinux to chainload ReaR instead of GRUB as that did not work
-        # on some systems.
-        rlPhaseStartSetup
-            ROOT_DEVICE="$(lsblk -no pkname "$(df --output=source /boot | tail -n1)")"
-            KERNEL_VERSION="$(uname -r)"
-            KERNEL_CMDLINE="$(grub2-editenv list | grep kernelopts | cut -d= -f2-)"
-            SERIAL_DEVICE="$(sed -e 's/.*console=ttyS\([^ ]*\).*/\1/' \
-                             <<< "$KERNEL_CMDLINE" | tr ',' ' ')"
-            rlRun "extlinux --install /boot/extlinux" \
-                 0 "Install extlinux to chainload ReaR"
-            rlRun "echo 'SERIAL $SERIAL_DEVICE
-UI menu.c32
-PROMPT 0
-
-MENU TITLE ReaR Chainload Boot Menu
-TIMEOUT 50
-
-LABEL linux
-    MENU LABEL RHEL
-    LINUX ../vmlinuz-$KERNEL_VERSION
-    APPEND $KERNEL_CMDLINE
-    INITRD ../initramfs-$KERNEL_VERSION.img
-
-LABEL rear
-    MENU LABEL Chainload ReaR from hd1
-    MENU DEFAULT
-    COM32 chain.c32
-    APPEND hd1' | tee /boot/extlinux/extlinux.conf" \
-                0 "Save extlinux configuration"
-            rlRun "cat /usr/share/syslinux/mbr.bin > /dev/$ROOT_DEVICE" \
-                0 "Write syslinux to /dev/$ROOT_DEVICE MBR"
-            if ! rlGetPhaseState; then
-                rlDie "FATAL ERROR: Installing syslinux failed"
-            fi
+            rlLog "Setup GRUB"
+            rlRun "echo 'menuentry \"ReaR-recover\" {
+  loopback loop (hd0,msdos2)/root/rear/var/lib/rear/output/rear-fedora.iso
+  linux (loop)/isolinux/kernel rw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
+  initrd (loop)/isolinux/initrd.cgz
+}
+set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
 
         rhts-reboot
