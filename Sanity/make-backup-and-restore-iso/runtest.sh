@@ -32,14 +32,16 @@ REBOOTCOUNT=${REBOOTCOUNT:-0}
 
 PACKAGE="rear"
 # FIXME: Remove
-ADDITONAL_PACKAGES=("syslinux-extlinux")
+ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso")
 
 NFS_SERVER_IP=$(cat /etc/hosts | grep server | awk '{print $1}')
 
-REAR_ROOT="/root/rear"
+#REAR_ROOT="/root/rear"
+REAR_ROOT=""
 REAR_BIN="$REAR_ROOT/usr/sbin/rear"
 REAR_CONFIG="$REAR_ROOT/etc/rear/local.conf"
 REAR_HOME_DIRECTORY="/root"
+REAR_ISO_OUTPUT="/var/lib/rear/output"
 
 rlJournalStart
 
@@ -63,7 +65,7 @@ USER_INPUT_TIMEOUT=10
 OUTPUT_URL=null
 BACKUP=NETFS
 # 4gb backup limit
-PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe loop;\" \"dd if=/tmp/mnt/root/rear/var/lib/rear/output/rear-fedora.iso of=/dev/cdrom;\" \"umount /tmp/mnt/;\")
+PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/root/rear/var/lib/rear/output/rear-fedora.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
 ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
             rlAssertExists "$REAR_CONFIG"
         rlPhaseEnd
@@ -83,11 +85,19 @@ ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configurat
         rlPhaseEnd
 
         rlPhaseStartSetup
+            rlLog "Make small iso file that is bootable by memdisk"
+            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-fedora.iso -o $REAR_ISO_OUTPUT/small-rear.iso -- -rm_r backup"
+        rlPhaseEnd
+
+
+        rlPhaseStartSetup
+            rlLog "Setup Boot"
+            rlLog "Copying memdisk"
+            rlRun "cp /usr/share/syslinux/memdisk /boot/"
             rlLog "Setup GRUB"
             rlRun "echo 'menuentry \"ReaR-recover\" {
-  loopback loop (hd0,msdos2)/root/rear/var/lib/rear/output/rear-fedora.iso
-  linux (loop)/isolinux/kernel rw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
-  initrd (loop)/isolinux/initrd.cgz
+linux16 (hd0,msdos1)/memdisk iso raw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
+initrd16 (hd0,msdos2)$REAR_ISO_OUTPUT/small-rear.iso
 }
 set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
