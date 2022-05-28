@@ -1,3 +1,8 @@
 summary: 'backup iso test'
 
+require:
+    - syslinux-extlinux
+    - syslinux-nonlinux
+    - xorriso
+
 duration: 30m
