@@ -30,11 +30,16 @@
 
 PACKAGE="rear"
 # FIXME: Remove
-ADDITONAL_PACKAGES=("syslinux-extlinux")
+ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso")
+
+ROOT_DISK=$(df -hT | grep /$ | awk '{print $1}')
 
 REAR_BIN="/usr/sbin/rear"
 REAR_CONFIG="/etc/rear/local.conf"
 REAR_HOME_DIRECTORY="/root"
+REAR_ISO_OUTPUT="/var/lib/rear/output"
+
+HOST_NAME=$(hostname -s)
 
 rlJournalStart
     if [ "$REBOOTCOUNT" -eq 0 ]; then
@@ -55,7 +60,7 @@ BACKUP=NETFS
 BACKUP_URL=iso:///backup
 OUTPUT_URL=null
 # 4gb backup limit
-PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe loop;\" \"dd if=/tmp/mnt/root/rear/var/lib/rear/output/rear-fedora.iso of=/dev/cdrom;\" \"umount /tmp/mnt/;\")
+PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount $ROOT_DISK /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/var/lib/rear/output/rear-$HOST_NAME.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
 ISO_FILE_SIZE_LIMIT=4294967296
 ISO_DEFAULT=automatic
 ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
@@ -68,7 +73,7 @@ ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration
         rlPhaseEnd
 
         rlPhaseStartTest
-            rlRun "$REAR_BIN -v mkbackup" 0 "Creating backup to $REAR_ROOT"
+            rlRun "$REAR_BIN -v mkbackup" 0 "Creating backup to $REAR_ISO_OUTPUT"
         rlPhaseEnd
 
         rlPhaseStartSetup
@@ -77,11 +82,19 @@ ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration
         rlPhaseEnd
 
         rlPhaseStartSetup
+            rlLog "Make small iso file that is bootable by memdisk"
+            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-$HOST_NAME.iso -o $REAR_ISO_OUTPUT/small-rear.iso -- -rm_r backup"
+        rlPhaseEnd
+
+
+        rlPhaseStartSetup
+            rlLog "Setup Boot"
+            rlLog "Copying memdisk"
+            rlRun "cp /usr/share/syslinux/memdisk /boot/"
             rlLog "Setup GRUB"
             rlRun "echo 'menuentry \"ReaR-recover\" {
-  loopback loop (hd0,msdos2)/root/rear/var/lib/rear/output/rear-fedora.iso
-  linux (loop)/isolinux/kernel rw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
-  initrd (loop)/isolinux/initrd.cgz
+linux16 (hd0,msdos1)/memdisk iso raw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
+initrd16 (hd0,msdos2)$REAR_ISO_OUTPUT/small-rear.iso
 }
 set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
