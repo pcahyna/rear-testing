@@ -36,9 +36,10 @@ ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso")
 
 NFS_SERVER_IP=$(cat /etc/hosts | grep server | awk '{print $1}')
 
-#REAR_ROOT="/root/rear"
+# REAR_ROOT="/root/rear"
 REAR_ROOT=""
 REAR_BIN="$REAR_ROOT/usr/sbin/rear"
+#REAR_BIN="rear"
 REAR_CONFIG="$REAR_ROOT/etc/rear/local.conf"
 REAR_HOME_DIRECTORY="/root"
 REAR_ISO_OUTPUT="/var/lib/rear/output"
@@ -46,6 +47,13 @@ REAR_ISO_OUTPUT="/var/lib/rear/output"
 rlJournalStart
 
     if [ "$REBOOTCOUNT" -eq 0 ]; then
+        # Phase to check rear existing
+        rlPhaseStartSetup
+            if ! rlCheckRpm "rear"; then
+                rlDie "FATAL ERROR: rear hasn't been installed!"
+            fi
+        rlPhaseStartEnd
+
         # Fresh start
         rlPhaseStartSetup
             rlAssertRpm $PACKAGE
