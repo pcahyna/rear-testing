@@ -44,6 +44,8 @@ REAR_CONFIG="$REAR_ROOT/etc/rear/local.conf"
 REAR_HOME_DIRECTORY="/root"
 REAR_ISO_OUTPUT="/var/lib/rear/output"
 
+HOST_NAME=$(hostname -s)
+
 rlJournalStart
 
     if [ "$REBOOTCOUNT" -eq 0 ]; then
@@ -73,7 +75,7 @@ USER_INPUT_TIMEOUT=10
 OUTPUT_URL=null
 BACKUP=NETFS
 # 4gb backup limit
-PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/root/rear/var/lib/rear/output/rear-fedora.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
+PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/var/lib/rear/output/rear-$HOST_NAME.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
 ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
             rlAssertExists "$REAR_CONFIG"
         rlPhaseEnd
@@ -94,7 +96,7 @@ ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configurat
 
         rlPhaseStartSetup
             rlLog "Make small iso file that is bootable by memdisk"
-            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-fedora.iso -o $REAR_ISO_OUTPUT/small-rear.iso -- -rm_r backup"
+            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-$HOST_NAME.iso -o $REAR_ISO_OUTPUT/small-rear.iso -- -rm_r backup"
         rlPhaseEnd
 
 
