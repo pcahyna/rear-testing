@@ -54,7 +54,7 @@ rlJournalStart
             if ! rlCheckRpm "rear"; then
                 rlDie "FATAL ERROR: rear hasn't been installed!"
             fi
-3        rlPhaseStartEnd
+        rlPhaseStartEnd
 
         # Fresh start
         rlPhaseStartSetup
@@ -75,7 +75,7 @@ USER_INPUT_TIMEOUT=10
 OUTPUT_URL=null
 BACKUP=NETFS
 # 4gb backup limit
-PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/root/rear/var/lib/rear/output/rear-$HOST_NAME.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
+PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/var/lib/rear/output/rear-$HOST_NAME.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
 ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
             rlAssertExists "$REAR_CONFIG"
         rlPhaseEnd
