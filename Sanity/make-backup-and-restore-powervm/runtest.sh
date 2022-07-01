@@ -136,7 +136,7 @@ POST_RECOVERY_SCRIPT=(
     \"nvram -p common --update-config \'boot-device=$(cat bootorder.bak)\';\"
 )
 AUTOEXCLUDE_MULTIPATH=n
-MIGRATION_MODE=n
+MIGRATION_MODE=${MIGRATION_MODE-n}
 ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" \
                 0 "Creating basic configuration file"
             rlAssertExists "/etc/rear/local.conf"
