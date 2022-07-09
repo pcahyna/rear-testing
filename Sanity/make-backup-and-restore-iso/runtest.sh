@@ -36,6 +36,8 @@ ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso")
 
 NFS_SERVER_IP=$(cat /etc/hosts | grep server | awk '{print $1}')
 
+ROOT_DISK=$(df -hT | grep /$ | awk '{print $1}')
+
 # REAR_ROOT="/root/rear"
 REAR_ROOT=""
 REAR_BIN="$REAR_ROOT/usr/sbin/rear"
@@ -75,7 +77,7 @@ USER_INPUT_TIMEOUT=10
 OUTPUT_URL=null
 BACKUP=NETFS
 # 4gb backup limit
-PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount /dev/vda2 /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/var/lib/rear/output/rear-$HOST_NAME.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
+PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount $ROOT_DISK /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/var/lib/rear/output/rear-$HOST_NAME.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
 ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
             rlAssertExists "$REAR_CONFIG"
         rlPhaseEnd
