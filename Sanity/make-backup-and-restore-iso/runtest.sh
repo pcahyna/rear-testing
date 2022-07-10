@@ -32,6 +32,12 @@ PACKAGE="rear"
 # FIXME: Remove
 ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso")
 
+ROOT_PATH=$(grub2-mkrelpath /)
+BOOT_PATH=$(grub2-mkrelpath /boot)
+BOOT_FS_UUID=$(grub2-probe --target=fs_uuid /boot)
+ROOT_FS_UUID=$(grub2-probe --target=fs_uuid /)
+
+
 ROOT_DISK=$(df -hT | grep /$ | awk '{print $1}')
 
 REAR_BIN="/usr/sbin/rear"
@@ -60,7 +66,7 @@ BACKUP=NETFS
 BACKUP_URL=iso:///backup
 OUTPUT_URL=null
 # 4gb backup limit
-PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount $ROOT_DISK /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/var/lib/rear/output/rear-$HOST_NAME.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
+PRE_RECOVERY_SCRIPT=(\"mkdir /tmp/mnt;\" \"mount $ROOT_DISK /tmp/mnt/;\" \"modprobe brd rd_nr=1 rd_size=2097152;\" \"dd if=/tmp/mnt/$ROOT_PATH/var/lib/rear/output/rear-$HOST_NAME.iso of=/dev/ram0;\" \"umount /tmp/mnt/;\")
 ISO_FILE_SIZE_LIMIT=4294967296
 ISO_DEFAULT=automatic
 ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
@@ -83,7 +89,7 @@ ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration
 
         rlPhaseStartSetup
             rlLog "Make small iso file that is bootable by memdisk"
-            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-$HOST_NAME.iso -o $REAR_ISO_OUTPUT/small-rear.iso -- -rm_r backup"
+            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-$HOST_NAME.iso -o $REAR_ISO_OUTPUT/rear-rescue-only.iso -- -rm_r backup"
         rlPhaseEnd
 
 
@@ -92,9 +98,13 @@ ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration
             rlLog "Copying memdisk"
             rlRun "cp /usr/share/syslinux/memdisk /boot/"
             rlLog "Setup GRUB"
-            rlRun "echo 'menuentry \"ReaR-recover\" {
-linux16 (hd0,msdos1)/memdisk iso raw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
-initrd16 (hd0,msdos2)$REAR_ISO_OUTPUT/small-rear.iso
+            rlRun "echo 'search --no-floppy --fs-uuid --set=bootfs $BOOT_FS_UUID
+search --no-floppy --fs-uuid --set=rootfs $ROOT_FS_UUID
+terminal_input serial
+terminal_output serial
+menuentry \"ReaR-recover\" {
+linux16 (\$bootfs)$BOOT_PATH/memdisk iso raw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
+initrd16 (\$rootfs)$ROOT_PATH/$REAR_ISO_OUTPUT/rear-rescue-only.iso
 }
 set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
