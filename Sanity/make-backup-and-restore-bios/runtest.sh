@@ -72,7 +72,8 @@ rlJournalStart
             rlFileBackup "/etc/rear/local.conf"
             rlRun -l "echo 'OUTPUT=USB
 BACKUP=NETFS
-BACKUP_URL=usb://$REAR_LABEL_PATH' | tee /etc/rear/local.conf" \
+BACKUP_URL=usb://$REAR_LABEL_PATH
+USER_INPUT_TIMEOUT=10' | tee /etc/rear/local.conf" \
                 0 "Creating basic configuration file"
             rlAssertExists "/etc/rear/local.conf"
         rlPhaseEnd
