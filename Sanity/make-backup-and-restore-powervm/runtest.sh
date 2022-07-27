@@ -132,8 +132,8 @@ BACKUP=NETFS
 BACKUP_URL=iso://backup
 ISO_DEFAULT=automatic
 POST_RECOVERY_SCRIPT=(
-    \"test -c /dev/nvram || modprobe nvram\"
-    \"nvram -p common --update-config \'boot-device=$(cat bootorder.bak)\'\"
+    \"test -c /dev/nvram || modprobe nvram;\"
+    \"nvram -p common --update-config \'boot-device=$(cat bootorder.bak)\';\"
 )
 AUTOEXCLUDE_MULTIPATH=n
 MIGRATION_MODE=n
