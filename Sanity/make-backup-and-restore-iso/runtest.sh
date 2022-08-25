@@ -112,10 +112,7 @@ ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configurat
             rlLog "Copying memdisk"
             rlRun "cp /usr/share/syslinux/memdisk /boot/"
             rlLog "Setup GRUB"
-            rlRun "echo 'timeout=5
-serial --unit=0 --speed=9600
-terminal --timeout=5 serial console
-terminal_input serial
+            rlRun "echo 'terminal_input serial
 terminal_output serial
 menuentry \"ReaR-recover\" {
 linux16 (\$root)/memdisk iso raw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
