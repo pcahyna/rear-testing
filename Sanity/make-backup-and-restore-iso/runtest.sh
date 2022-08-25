@@ -118,8 +118,8 @@ terminal --timeout=5 serial console
 terminal_input serial
 terminal_output serial
 menuentry \"ReaR-recover\" {
-linux16 (hd0,gpt2)/memdisk iso raw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
-initrd16 (hd0,gpt2)/small-rear.iso
+linux16 (\$root)/memdisk iso raw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
+initrd16 (\$root)/small-rear.iso
 }
 set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
