@@ -53,7 +53,7 @@ $(METADATA): Makefile
 	@echo "Type:            Sanity" >> $(METADATA)
 	@echo "TestTime:        2h" >> $(METADATA)
 	@echo "RunFor:          rear" >> $(METADATA)
-	@echo "Requires:        rear syslinux-extlinux grub2-efi-x64-modules" >> $(METADATA)
+	@echo "Requires:        rear syslinux-extlinux grub2-tools-extra grub2-efi-x64-modules" >> $(METADATA)
 	@echo "Priority:        Normal" >> $(METADATA)
 	@echo "License:         GPLv2+" >> $(METADATA)
 	@echo "Confidential:    no" >> $(METADATA)

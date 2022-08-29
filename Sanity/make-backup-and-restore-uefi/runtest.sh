@@ -29,7 +29,7 @@
 . /usr/bin/rhts-environment.sh || exit 1
 . /usr/share/beakerlib/beakerlib.sh || exit 1
 
-PACKAGES="rear syslinux-extlinux grub2-efi-x64-modules"
+PACKAGES="rear syslinux-extlinux grub2-tools-extra grub2-efi-x64-modules"
 REAR_LABEL="${REAR_LABEL:-REAR-000}"
 REAR_LABEL_PATH="/dev/disk/by-label/$REAR_LABEL"
 HOSTNAME_SHORT="$(hostname --short)"
