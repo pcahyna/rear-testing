@@ -121,8 +121,8 @@ BACKUP=NETFS
 BACKUP_URL=usb://$REAR_LABEL_PATH
 USB_UEFI_PART_SIZE=500
 POST_RECOVERY_SCRIPT=(
-    \"efibootmgr -n \\\$(efibootmgr | grep BootOrder | cut -d\' \' -f2 | cut -d\',\' -f1)\"
-    \"efibootmgr --bootorder \'$OLD_BOOT_ORDER\'\"
+    \"efibootmgr -n \\\$(efibootmgr | grep BootOrder | cut -d\' \' -f2 | cut -d\',\' -f1);\"
+    \"efibootmgr --bootorder \'$OLD_BOOT_ORDER\';\"
 )' | tee /etc/rear/local.conf" \
                 0 "Creating basic configuration file"
             rlAssertExists "/etc/rear/local.conf"
