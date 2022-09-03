@@ -55,6 +55,7 @@ rlJournalStart
         rlPhaseStartSetup
             rlFileBackup "$REAR_CONFIG"
             rlRun "echo 'OUTPUT=ISO
+SSH_FILES=no
 USER_INPUT_TIMEOUT=10
 BACKUP=NETFS
 BACKUP_URL=iso:///backup
