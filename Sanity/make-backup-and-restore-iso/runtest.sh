@@ -55,7 +55,7 @@ HOST_NAME=$(hostname -s)
 
 rlJournalStart
 
-    if [ "$REBOOTCOUNT" -eq 0 ]; then
+    if [ "$TMT_REBOOT_COUNT" -eq 0 ]; then
         # Phase to check rear existing
         rlPhaseStartSetup
             if ! rlCheckRpm "rear"; then
@@ -122,8 +122,9 @@ initrd16 (\$root)/small-rear.iso
 set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
 
-       rhts-reboot
-   elif [ "$REBOOTCOUNT" -eq 1 ]; then
+       # rhts-reboot
+       rlRun "tmt-reboot -t 600" 0 "Reboot the machine"
+   elif [ "$TMT_REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
         rlPhaseStartTest
             rlAssertNotExists $REAR_HOME_DIRECTORY/recovery_will_remove_me
