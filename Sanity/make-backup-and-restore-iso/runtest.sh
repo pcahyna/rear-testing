@@ -94,6 +94,7 @@ ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configurat
         rlPhaseEnd
 
         rlPhaseStartTest
+            rlRun "export TMPDIR='/var/tmp'"
             rlRun "$REAR_BIN -v mkbackup" 0 "Creating backup to $REAR_ROOT"
         rlPhaseEnd
 
