@@ -38,7 +38,8 @@ NFS_SERVER_IP=$(cat /etc/hosts | grep server | awk '{print $1}')
 
 ROOT_PATH=$(grub2-mkrelpath /)
 BOOT_PATH=$(grub2-mkrelpath /boot)
-FS_UUID=$(grub2-probe --target=fs_uuid /boot)
+BOOT_FS_UUID=$(grub2-probe --target=fs_uuid /boot)
+ROOT_FS_UUID=$(grub2-probe --target=fs_uuid /)
 # BOOT_DRIVE=$(grub2-probe --target=drive /boot)
 # ROOT_DRIVE=$(grub2-probe --target=drive /)
 
@@ -107,7 +108,7 @@ ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configurat
 
         rlPhaseStartSetup
             rlLog "Make small iso file that is bootable by memdisk"
-            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-$HOST_NAME.iso -o /boot/small-rear.iso -- -rm_r backup"
+            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-$HOST_NAME.iso -o $REAR_ISO_OUTPUT/small-rear.iso -- -rm_r backup"
         rlPhaseEnd
 
 
@@ -116,12 +117,13 @@ ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configurat
             rlLog "Copying memdisk"
             rlRun "cp /usr/share/syslinux/memdisk /boot/"
             rlLog "Setup GRUB"
-            rlRun "echo 'search --no-floppy --fs-uuid --set=bootfs $FS_UUID
+            rlRun "echo 'search --no-floppy --fs-uuid --set=bootfs $BOOT_FS_UUID
+search --no-floppy --fs-uuid --set=rootfs $ROOT_FS_UUID
 terminal_input serial
 terminal_output serial
 menuentry \"ReaR-recover\" {
 linux16 (\$bootfs)$BOOT_PATH/memdisk iso raw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
-initrd16 (\$bootfs)$BOOT_PATH/small-rear.iso
+initrd16 (\$rootfs)$ROOT_PATH/$REAR_ISO_OUTPUT/small-rear.iso
 }
 set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
