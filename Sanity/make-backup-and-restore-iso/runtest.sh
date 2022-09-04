@@ -74,6 +74,7 @@ ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration
         rlPhaseEnd
 
         rlPhaseStartTest
+            rlRun "export TMPDIR='/var/tmp'"
             rlRun "$REAR_BIN -d mkbackup" 0 "Creating backup to $REAR_ISO_OUTPUT"
             rlFileSubmit /var/log/rear/rear*.log rear-mkbackup.log
             if ! rlGetPhaseState; then
