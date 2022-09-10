@@ -77,7 +77,8 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "$REAR_CONFIG"
-            rlRun "echo 'ISO_DEFAULT=automatic
+            rlRun "echo 'COPY_AS_IS+=( /usr/share/beakerlib ${TMT_PLAN_DATA/data/discover}/default-0/tests/Sanity/make-backup-and-restore-iso )
+ISO_DEFAULT=automatic
 ISO_RECOVER_MODE=unattended
 OUTPUT=ISO
 BACKUP_URL=iso:///backup
@@ -131,7 +132,21 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
        rlRun "tmt-reboot -t 900" 0 "Reboot the machine"
    elif [ "$TMT_REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
-        rlRun "sleep 20"
+        rlRun "sleep 5"
+        rlRun "ps -e | grep -i rear"
+        rlRun "lsblk"
+        rlRun "lsblk -f"
+        rlRun "cat /var/log/rear/rear*.log"
+        rlRun "sleep 5"
+        rlRun "ps -e | grep -i rear"
+        rlRun "lsblk"
+        rlRun "lsblk -f"
+        rlRun "cat /var/log/rear/rear*.log"
+        rlRun "sleep 5"
+        rlRun "ps -e | grep -i rear"
+        rlRun "lsblk"
+        rlRun "lsblk -f"
+        rlRun "cat /var/log/rear/rear*.log"
         rlFileSubmit /var/log/rear/rear*.log rear-format.log
 
     else
