@@ -131,19 +131,8 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
        rlRun "tmt-reboot -t 900" 0 "Reboot the machine"
    elif [ "$TMT_REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
-        rlPhaseStartTest
-            rlAssertNotExists $REAR_HOME_DIRECTORY/recovery_will_remove_me
-            rlAssertExists $REAR_HOME_DIRECTORY/drive_layout.old
-            rlRun "ls -la /root/"
-            rlRun "ls -la $REAR_HOME_DIRECTORY/drive_layout.old"
-            rlRun "lsblk | tee $REAR_HOME_DIRECTORY/drive_layout.new" 0 "Get current lsblk output"
-            rlAssertNotDiffer $REAR_HOME_DIRECTORY/drive_layout.old $REAR_HOME_DIRECTORY/drive_layout.new
-        rlPhaseEnd
-
-        rlPhaseStartCleanup
-            rlFileRestore
-            rlRun "rm -f $REAR_HOME_DIRECTORY/drive_layout{,.new}" 0 "Remove lsblk outputs"
-        rlPhaseEnd
+        rlRun "sleep 20"
+        rlFileSubmit /var/log/rear/rear*.log rear-format.log
 
     else
         rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
