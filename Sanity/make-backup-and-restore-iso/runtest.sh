@@ -77,8 +77,7 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "$REAR_CONFIG"
-            rlRun "echo 'SSH_FILES=no
-ISO_DEFAULT=automatic
+            rlRun "echo 'ISO_DEFAULT=automatic
 ISO_RECOVER_MODE=unattended
 OUTPUT=ISO
 BACKUP_URL=iso:///backup
