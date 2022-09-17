@@ -77,7 +77,7 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "$REAR_CONFIG"
-            rlRun "echo 'COPY_AS_IS+=( /usr/share/beakerlib ${TMT_PLAN_DATA/data/discover}/default-0/tests/Sanity/make-backup-and-restore-iso )
+            rlRun "echo 'COPY_AS_IS+=( /usr/share/beakerlib ${TMT_PLAN_DATA/data/discover}/default/tests/Sanity/make-backup-and-restore-iso )
 ISO_DEFAULT=automatic
 ISO_RECOVER_MODE=unattended
 OUTPUT=ISO
