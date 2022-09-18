@@ -32,7 +32,7 @@ REBOOTCOUNT=${REBOOTCOUNT:-0}
 
 PACKAGE="rear"
 # FIXME: Remove
-ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso")
+ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso" "snapper")
 
 NFS_SERVER_IP=$(cat /etc/hosts | grep server | awk '{print $1}')
 
@@ -77,7 +77,8 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "$REAR_CONFIG"
-            rlRun "echo 'PROGS+=( ps lsblk sleep cat )
+            rlRun "echo 'REQUIRED_PROGS+=( snapper chattr )
+PROGS+=( ps lsblk sleep cat lsattr )
 COPY_AS_IS+=( /usr/share/beakerlib ${TMT_PLAN_DATA/data/discover}/default/tests/Sanity/make-backup-and-restore-iso )
 ISO_DEFAULT=automatic
 ISO_RECOVER_MODE=unattended
