@@ -77,7 +77,8 @@ rlJournalStart
 
         rlPhaseStartSetup
             rlFileBackup "$REAR_CONFIG"
-            rlRun "echo 'COPY_AS_IS+=( /usr/share/beakerlib ${TMT_PLAN_DATA/data/discover}/default/tests/Sanity/make-backup-and-restore-iso )
+            rlRun "echo 'PROGS+=( ps lsblk sleep cat )
+COPY_AS_IS+=( /usr/share/beakerlib ${TMT_PLAN_DATA/data/discover}/default/tests/Sanity/make-backup-and-restore-iso )
 ISO_DEFAULT=automatic
 ISO_RECOVER_MODE=unattended
 OUTPUT=ISO
@@ -132,23 +133,12 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
        rlRun "tmt-reboot -t 900" 0 "Reboot the machine"
    elif [ "$TMT_REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
-        rlRun "sleep 5"
-        rlRun "ps -e | grep -i rear"
-        rlRun "lsblk"
-        rlRun "lsblk -f"
-        rlRun "cat /var/log/rear/rear*.log"
-        rlRun "sleep 5"
-        rlRun "ps -e | grep -i rear"
-        rlRun "lsblk"
-        rlRun "lsblk -f"
-        rlRun "cat /var/log/rear/rear*.log"
-        rlRun "sleep 5"
-        rlRun "ps -e | grep -i rear"
-        rlRun "lsblk"
-        rlRun "lsblk -f"
-        rlRun "cat /var/log/rear/rear*.log"
-        rlFileSubmit /var/log/rear/rear*.log rear-format.log
-
+        for i in {1..30}; do
+            rlRun "sleep 2"
+            rlRun "ps -e | grep -i rear"
+            rlRun "lsblk -f"
+            rlRun "cat /var/log/rear/rear*.log"
+        done
     else
         rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
     fi
