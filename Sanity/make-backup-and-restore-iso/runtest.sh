@@ -129,7 +129,7 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
 
        # rhts-reboot
-       rlRun "tmt-reboot -t 900" 0 "Reboot the machine"
+       rlRun "tmt-reboot -t 1800" 0 "Reboot the machine"
    elif [ "$TMT_REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
         rlPhaseStartTest
