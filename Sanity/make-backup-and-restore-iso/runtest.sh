@@ -141,7 +141,8 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
             rlRun "lsblk -f"
             rlRun "cat /var/log/rear/rear*.log"
         done
-        rlRun "reboot"
+        rlRun "dmesg"
+        rlDie "Done"
     else
         rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
     fi
