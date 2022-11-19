@@ -28,8 +28,6 @@
 # Include Beaker environment
 . /usr/share/beakerlib/beakerlib.sh || exit 1
 
-REBOOTCOUNT=${REBOOTCOUNT:-0}
-
 PACKAGE="rear"
 # FIXME: Remove
 ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso")
@@ -147,7 +145,7 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
 
     else
-        rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
+        rlDie "Only sensible reboot count is 0 or 1! Got: $TMT_REBOOT_COUNT"
     fi
 
 rlJournalPrintText
