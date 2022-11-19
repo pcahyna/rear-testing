@@ -34,23 +34,16 @@ PACKAGE="rear"
 # FIXME: Remove
 ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso")
 
-NFS_SERVER_IP=$(cat /etc/hosts | grep server | awk '{print $1}')
-
 ROOT_PATH=$(grub2-mkrelpath /)
 BOOT_PATH=$(grub2-mkrelpath /boot)
 BOOT_FS_UUID=$(grub2-probe --target=fs_uuid /boot)
 ROOT_FS_UUID=$(grub2-probe --target=fs_uuid /)
-# BOOT_DRIVE=$(grub2-probe --target=drive /boot)
-# ROOT_DRIVE=$(grub2-probe --target=drive /)
 
 
 ROOT_DISK=$(df -hT | grep /$ | awk '{print $1}')
 
-# REAR_ROOT="/root/rear"
-REAR_ROOT=""
-REAR_BIN="$REAR_ROOT/usr/sbin/rear"
-#REAR_BIN="rear"
-REAR_CONFIG="$REAR_ROOT/etc/rear/local.conf"
+REAR_BIN="/usr/sbin/rear"
+REAR_CONFIG="/etc/rear/local.conf"
 REAR_HOME_DIRECTORY="/root"
 REAR_ISO_OUTPUT="/var/lib/rear/output"
 
@@ -98,7 +91,7 @@ ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configurat
 
         rlPhaseStartTest
             rlRun "export TMPDIR='/var/tmp'"
-            rlRun "$REAR_BIN -v mkbackup" 0 "Creating backup to $REAR_ROOT"
+            rlRun "$REAR_BIN -v mkbackup" 0 "Creating backup to $REAR_ISO_OUTPUT"
         rlPhaseEnd
 
         rlPhaseStartSetup
