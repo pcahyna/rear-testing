@@ -28,8 +28,6 @@
 # Include Beaker environment
 . /usr/share/beakerlib/beakerlib.sh || exit 1
 
-REBOOTCOUNT=${REBOOTCOUNT:-0}
-
 PACKAGE="rear"
 # FIXME: Remove
 ADDITONAL_PACKAGES=("syslinux-extlinux" "syslinux-nonlinux" "xorriso")
@@ -51,7 +49,7 @@ HOST_NAME=$(hostname -s)
 
 rlJournalStart
 
-    if [ "$REBOOTCOUNT" -eq 0 ]; then
+    if [ "$TMT_REBOOT_COUNT" -eq 0 ]; then
         # Phase to check rear existing
         rlPhaseStartSetup
             if ! rlCheckRpm "rear"; then
@@ -121,8 +119,8 @@ initrd16 (\$rootfs)$ROOT_PATH/$REAR_ISO_OUTPUT/small-rear.iso
 set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
 
-       rhts-reboot
-   elif [ "$REBOOTCOUNT" -eq 1 ]; then
+       rlRun "tmt-reboot -t 1200" 0 "Reboot the machine"
+   elif [ "$TMT_REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
         rlPhaseStartTest
             rlAssertNotExists $REAR_HOME_DIRECTORY/recovery_will_remove_me
@@ -139,7 +137,7 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
 
     else
-        rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
+        rlDie "Only sensible reboot count is 0 or 1! Got: $TMT_REBOOT_COUNT"
     fi
 
 rlJournalPrintText
