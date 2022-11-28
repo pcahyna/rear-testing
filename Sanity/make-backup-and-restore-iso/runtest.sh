@@ -109,8 +109,12 @@ initrd16 (\$rootfs)$ROOT_PATH/$REAR_ISO_OUTPUT/rear-rescue-only.iso
 set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
 
-        rhts-reboot
-
+        if test "$TMT_REBOOT_COUNT"; then
+            rlRun "tmt-reboot -t 1200" 0 "Reboot the machine"
+        else
+            # not running from TMT
+            rhts-reboot
+        fi
     elif [ "$REBOOTCOUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
         rlPhaseStartTest
