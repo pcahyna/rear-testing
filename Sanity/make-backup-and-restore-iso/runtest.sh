@@ -99,7 +99,7 @@ ISO_FILE_SIZE_LIMIT=4294967296' | tee $REAR_CONFIG" 0 "Creating basic configurat
 
         rlPhaseStartSetup
             rlLog "Make small iso file that is bootable by memdisk"
-            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-$HOST_NAME.iso -o $REAR_ISO_OUTPUT/small-rear.iso -- -rm_r backup"
+            rlRun "xorriso -as mkisofs -r -V 'REAR-ISO' -J -J -joliet-long -cache-inodes -b isolinux/isolinux.bin -c isolinux/boot.cat -boot-load-size 4 -boot-info-table -no-emul-boot -eltorito-alt-boot -dev $REAR_ISO_OUTPUT/rear-$HOST_NAME.iso -o $REAR_ISO_OUTPUT/rear-rescue-only.iso -- -rm_r backup"
         rlPhaseEnd
 
 
@@ -114,7 +114,7 @@ terminal_input serial
 terminal_output serial
 menuentry \"ReaR-recover\" {
 linux16 (\$bootfs)$BOOT_PATH/memdisk iso raw selinux=0 console=ttyS0,9600 console=tty0 auto_recover unattended
-initrd16 (\$rootfs)$ROOT_PATH/$REAR_ISO_OUTPUT/small-rear.iso
+initrd16 (\$rootfs)$ROOT_PATH/$REAR_ISO_OUTPUT/rear-rescue-only.iso
 }
 set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
