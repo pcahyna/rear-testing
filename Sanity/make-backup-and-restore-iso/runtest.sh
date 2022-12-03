@@ -4,7 +4,8 @@
 #
 #   runtest.sh of /CoreOS/rear/Sanity/rear-basic
 #   Description: Test basic functionality of REAR on systems with BIOS.
-#   Author: Lukas Zaoral <lzaoral@redhat.com>
+#   Authors: Lukas Zaoral <lzaoral@redhat.com>
+#            Anton Voznia <antoncty@gmail.com>
 #
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
