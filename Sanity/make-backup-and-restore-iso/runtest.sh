@@ -134,7 +134,7 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
        rlRun "tmt-reboot -t 900" 0 "Reboot the machine"
    elif [ "$TMT_REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
-        rlRun "rear -D recover && cat /var/log/rear/rear*.log && reboot &"
+        rlRun "{ rear -D recover; cat /var/log/rear/rear*.log; dmesg; reboot; } &"
 
         rlRun "sleep 120"
         for i in {1..30}; do
