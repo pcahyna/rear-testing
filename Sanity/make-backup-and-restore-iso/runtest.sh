@@ -79,7 +79,7 @@ rlJournalStart
             rlFileBackup "$REAR_CONFIG"
             rlRun "echo 'REQUIRED_PROGS+=( snapper chattr )
 PROGS+=( ps lsblk sleep cat lsattr )
-COPY_AS_IS+=( /usr/share/beakerlib ${TMT_PLAN_DATA/data/discover}/default/tests/Sanity/make-backup-and-restore-iso )
+COPY_AS_IS+=( /usr/share/beakerlib ${TMT_PLAN_DATA/data/discover}/default-0/tests/Sanity/make-backup-and-restore-iso )
 ISO_DEFAULT=manual
 ISO_RECOVER_MODE=unattended
 OUTPUT=ISO
