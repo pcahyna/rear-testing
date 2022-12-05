@@ -134,13 +134,16 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
        rlRun "tmt-reboot -t 900" 0 "Reboot the machine"
    elif [ "$TMT_REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
-        rlRun "rear -D recover &"
+        rlRun "rear -D recover && cat /var/log/rear/rear*.log && reboot &"
+
+        rlRun "sleep 120"
         for i in {1..30}; do
-            rlRun "sleep 2"
-            rlRun "ps -e | grep -i rear"
-            rlRun "lsblk -f"
-            rlRun "cat /var/log/rear/rear*.log"
+            rlRun "sleep 20";
+            rlRun "ps -e | grep -i rear";
+            rlRun "lsblk -f";
+            rlRun "cat /var/log/rear/rear*.log";
         done
+
         rlRun "dmesg"
         rlDie "Done"
     else
