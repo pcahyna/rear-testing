@@ -78,7 +78,7 @@ rlJournalStart
         rlPhaseStartSetup
             rlFileBackup "$REAR_CONFIG"
             rlRun "echo 'REQUIRED_PROGS+=( snapper chattr )
-PROGS+=( ps lsblk sleep cat lsattr )
+PROGS+=( ps lsblk sleep cat lsattr tmt )
 COPY_AS_IS+=( /usr/share/beakerlib ${TMT_PLAN_DATA/data/discover}/default-0/tests/Sanity/make-backup-and-restore-iso )
 ISO_DEFAULT=manual
 ISO_RECOVER_MODE=unattended
@@ -131,23 +131,22 @@ set default=\"ReaR-recover\"' >> /boot/grub2/grub.cfg"
         rlPhaseEnd
 
        # rhts-reboot
-       rlRun "tmt-reboot -t 900" 0 "Reboot the machine"
+       rlRun "tmt-reboot -t 1200" 0 "Reboot the machine"
    elif [ "$TMT_REBOOT_COUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
-        rlRun "{ rear -D recover; cat /var/log/rear/rear*.log; dmesg; reboot; } &"
+        rlRun "{ rear -D recover; cat /var/log/rear/rear*.log; dmesg; } &"
 
-        rlRun "sleep 120"
-        for i in {1..30}; do
-            rlRun "sleep 20";
-            rlRun "ps -e | grep -i rear";
-            rlRun "lsblk -f";
-            rlRun "cat /var/log/rear/rear*.log";
-        done
+        rlRun "sleep 500"
 
-        rlRun "dmesg"
-        rlDie "Done"
+        rlRun "dmesg";
+        rlRun "ps -e | grep -i rear";
+        rlRun "lsblk -f";
+        rlRun "cat /var/log/rear/rear*.log";
+        rlRun "tmt-reboot"
+    elif [ "$TMT_REBOOT_COUNT" -eq 2 ]; then
+        rlRun "TEST DONE!"
     else
-        rlDie "Only sensible reboot count is 0 or 1! Got: $REBOOTCOUNT"
+        rlDie "Only sensible reboot count is 0, or 1, or 2! Got: $TMT_REBOOT_COUNT"
     fi
 
 rlJournalPrintText
