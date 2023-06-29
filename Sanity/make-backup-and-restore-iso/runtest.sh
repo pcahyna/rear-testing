@@ -33,6 +33,10 @@ PACKAGE="rear"
 # FIXME: Remove
 ADDITONAL_PACKAGES=("syslinux-extlinux")
 
+REAR_BIN="/usr/sbin/rear"
+REAR_CONFIG="/etc/rear/local.conf"
+REAR_HOME_DIRECTORY="/root"
+
 rlJournalStart
     if [ "$REBOOTCOUNT" -eq 0 ]; then
         # Fresh start
