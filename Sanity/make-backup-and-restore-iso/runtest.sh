@@ -43,13 +43,13 @@ rlJournalStart
         rlPhaseEnd
 
         rlPhaseStartSetup
-            rlFileBackup "/etc/rear/local.conf"
+            rlFileBackup "$REAR_CONFIG"
             rlRun "echo 'OUTPUT=USB
 BACKUP=NETFS
 BACKUP_URL=usb:///dev/disk/by-label/REAR-000
 ISO_DEFAULT=automatic
-ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic configuration file"
-            rlAssertExists "/etc/rear/local.conf"
+ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
+            rlAssertExists "$REAR_CONFIG"
         rlPhaseEnd
 
         rlPhaseStartTest
@@ -73,21 +73,21 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
             fi
 
             rlLog "Selected $REAR_ROOT"
-            rlRun "rear -d format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
+            rlRun "$REAR_BIN -d format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
             rlFileSubmit /var/log/rear/rear*.log rear-format.log
             if ! rlGetPhaseState; then
-                rlDie "FATAL ERROR: rear -d format -- -y $REAR_ROOT failed. See rear-format.log for details."
+                rlDie "FATAL ERROR: $REAR_BIN -d format -- -y $REAR_ROOT failed. See rear-format.log for details."
             fi
 
-            rlRun -l "lsblk | tee drive_layout.old" 0 "Store lsblk output in recovery image"
-            rlAssertExists drive_layout.old
+            rlRun -l "lsblk | tee $REAR_HOME_DIRECTORY/drive_layout.old" 0 "Store lsblk output in recovery image"
+            rlAssertExists $REAR_HOME_DIRECTORY/drive_layout.old
         rlPhaseEnd
 
         rlPhaseStartTest
-            rlRun "rear -d mkbackup" 0 "Creating backup to $REAR_ROOT"
+            rlRun "$REAR_BIN -d mkbackup" 0 "Creating backup to $REAR_ROOT"
             rlFileSubmit /var/log/rear/rear*.log rear-mkbackup.log
             if ! rlGetPhaseState; then
-                rlDie "FATAL ERROR: rear -d mkbackup failed. See rear-mkbackup.log for details."
+                rlDie "FATAL ERROR: $REAR_BIN -d mkbackup failed. See rear-mkbackup.log for details."
             fi
         rlPhaseEnd
 
@@ -156,24 +156,24 @@ LABEL rear
     elif [ "$REBOOTCOUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
         rlPhaseStartTest
-            rlAssertNotExists recovery_will_remove_me
+            rlAssertNotExists $REAR_HOME_DIRECTORY/recovery_will_remove_me
 
-            rlAssertExists drive_layout.old
-            rlAssertExists /root/rear*.log
+            rlAssertExists $REAR_HOME_DIRECTORY/drive_layout.old
+            rlAssertExists $REAR_HOME_DIRECTORY/rear*.log
 
-            rlRun -l "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
-            if ! rlAssertNotDiffer drive_layout.old drive_layout.new; then
-                rlRun -l "diff -u drive_layout.old drive_layout.new" \
+            rlRun -l "lsblk | tee $REAR_HOME_DIRECTORY/drive_layout.new" 0 "Get current lsblk output"
+            if ! rlAssertNotDiffer $REAR_HOME_DIRECTORY/drive_layout.old $REAR_HOME_DIRECTORY/drive_layout.new; then
+                rlRun -l "diff -u $REAR_HOME_DIRECTORY/drive_layout.old $REAR_HOME_DIRECTORY/drive_layout.new" \
                     1 "Diff drive layout changes"
             fi
 
-            rlFileSubmit /root/rear*.log rear-recover.log
+            rlFileSubmit $REAR_HOME_DIRECTORY/rear*.log rear-recover.log
         rlPhaseEnd
 
         rlPhaseStartCleanup
             rlFileRestore
-            rlRun "rm -f drive_layout.{old,new}" 0 "Remove lsblk outputs"
-            rlRun "rm -f /root/rear*.log" 0 "Remove ReaR recovery log"
+            rlRun "rm -f $REAR_HOME_DIRECTORY/drive_layout.{old,new}" 0 "Remove lsblk outputs"
+            rlRun "rm -f $REAR_HOME_DIRECTORY/rear*.log" 0 "Remove ReaR recovery log"
         rlPhaseEnd
 
     else
