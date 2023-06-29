@@ -49,13 +49,13 @@ rlJournalStart
         rlPhaseEnd
 
         rlPhaseStartSetup
-            rlFileBackup "/etc/rear/local.conf"
+            rlFileBackup "$REAR_CONFIG"
             rlRun "echo 'OUTPUT=USB
 BACKUP=NETFS
 BACKUP_URL=usb:///dev/disk/by-label/REAR-000
 ISO_DEFAULT=automatic
-ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic configuration file"
-            rlAssertExists "/etc/rear/local.conf"
+ISO_RECOVER_MODE=unattended' | tee $REAR_CONFIG" 0 "Creating basic configuration file"
+            rlAssertExists "$REAR_CONFIG"
         rlPhaseEnd
 
         rlPhaseStartSetup
@@ -76,12 +76,12 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
 
             rlLog "Selected $REAR_ROOT"
             rlRun "rear -v format -- -y $REAR_ROOT" 0 "Partition and format $REAR_ROOT"
-            rlRun "lsblk | tee drive_layout" 0 "Store lsblk output in recovery image"
-            rlAssertExists drive_layout
+            rlRun -l "lsblk | tee $REAR_HOME_DIRECTORY/drive_layout.old" 0 "Store lsblk output in recovery image"
+            rlAssertExists $REAR_HOME_DIRECTORY/drive_layout.old
         rlPhaseEnd
 
         rlPhaseStartTest
-            rlRun "rear -v mkbackup" 0 "Creating backup to $REAR_ROOT"
+            rlRun "$REAR_BIN -v mkbackup" 0 "Creating backup to $REAR_ROOT"
         rlPhaseEnd
 
         rlPhaseStartSetup
@@ -124,15 +124,15 @@ ISO_RECOVER_MODE=unattended' | tee /etc/rear/local.conf" 0 "Creating basic confi
     elif [ "$REBOOTCOUNT" -eq 1 ]; then
         # REAR hopefully recovered the OS
         rlPhaseStartTest
-            rlAssertNotExists recovery_will_remove_me
-            rlAssertExists drive_layout
-            rlRun "lsblk | tee drive_layout.new" 0 "Get current lsblk output"
-            rlAssertNotDiffer drive_layout drive_layout.new
+            rlAssertNotExists $REAR_HOME_DIRECTORY/recovery_will_remove_me
+            rlAssertExists $REAR_HOME_DIRECTORY/drive_layout.old
+            rlRun "lsblk | tee $REAR_HOME_DIRECTORY/drive_layout.new" 0 "Get current lsblk output"
+            rlAssertNotDiffer $REAR_HOME_DIRECTORY/drive_layout.old $REAR_HOME_DIRECTORY/drive_layout.new
         rlPhaseEnd
 
         rlPhaseStartCleanup
             rlFileRestore
-            rlRun "rm -f drive_layout{,.new}" 0 "Remove lsblk outputs"
+            rlRun "rm -f $REAR_HOME_DIRECTORY/drive_layout{,.new}" 0 "Remove lsblk outputs"
         rlPhaseEnd
 
     else
